@@ -1,8 +1,19 @@
+# macOS
 .DS_Store
-/.build
-/Packages
+
+# Xcode
+/build
+/DerivedData/
 xcuserdata/
-DerivedData/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+
+# Swift Package Manager
+/.build/
+/Packages/
+/.swiftpm/
+
+# Workspace auto-generated
+.swiftpm/xcode/package.xcworkspace/
+.swiftpm/configuration/
+
+# Git credentials
 .netrc
