@@ -39,12 +39,7 @@ final class CustomButton: UIButton {
     }
 
     @objc private func buttonTapped() {
-        let vc = WebViewController()
-        vc.onJSCallback = { [weak self] message in
-            self?.callback?(message)
-        }
-        if let topVC = UIApplication.shared.windows.first?.rootViewController {
-            topVC.present(vc, animated: true, completion: nil)
-        }
+        // Use the Chatbot singleton to open the chatbot
+        Chatbot.shared.openChatbot()
     }
 }

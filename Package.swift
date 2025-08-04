@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "iOS-sdk",
     platforms: [
-            .iOS(.v13) // or .v14, based on your need
-        ],
+        .iOS(.v13)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -18,7 +18,8 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "iOS-sdk"),
+            name: "iOS-sdk",
+            path: "Sources/iOS-sdk"),
         .testTarget(
             name: "iOS-sdkTests",
             dependencies: ["iOS-sdk"]
