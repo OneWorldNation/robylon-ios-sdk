@@ -12,7 +12,7 @@ public class CustomButton: UIButton {
     
     // MARK: - Properties
     private var callback: ((String) -> Void)?
-    private var config: CustomBottomConfig?
+    private var config: CustomButtonConfig?
     
     // MARK: - Initializers
     public convenience init(callback: @escaping (String) -> Void) {
@@ -21,7 +21,7 @@ public class CustomButton: UIButton {
         setupDefaultButton()
     }
     
-    public convenience init(config: CustomBottomConfig, callback: @escaping (String) -> Void) {
+    public convenience init(config: CustomButtonConfig, callback: @escaping (String) -> Void) {
         self.init(type: .system)
         self.config = config
         self.callback = callback

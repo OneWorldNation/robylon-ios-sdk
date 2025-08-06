@@ -10,7 +10,7 @@ public class Chatbot {
     private var configuration: ChatbotConfiguration?
     private var isInitialized = false
     private var webViewController: WebViewController?
-    private var customBottomConfig: CustomBottomConfig?
+    private var customBottomConfig: CustomButtonConfig?
     
     // MARK: - Private Initializer
     private init() {}
@@ -51,86 +51,8 @@ public class Chatbot {
         self.isInitialized = true
         
         // Create CustomBottomConfig from API response
-        self.customBottomConfig = CustomBottomConfig.from(apiResponse: apiResponse)
+        self.customBottomConfig = CustomButtonConfig.from(apiResponse: apiResponse)
         
-        // Extract brand config data
-        let brandConfig = apiResponse.user?.org_info?.brand_config
-        
-        // Build event data in smaller parts
-        var eventData: [String: Any] = [
-            "apiKey": config.apiKey,
-            "orgId": config.orgId ?? "",
-            "userId": config.userId ?? "",
-            "hasUserToken": config.userToken != nil,
-            "hasUserProfile": config.userProfile != nil
-        ]
-        
-        // Add brand config data
-        var brandConfigData: [String: Any] = [
-            "name": brandConfig?.name ?? "",
-            "tagline": brandConfig?.tagline ?? "",
-            "chatbotId": brandConfig?.chatbot_id ?? "",
-            "launcherType": brandConfig?.launcher_type ?? "",
-            "interfaceType": brandConfig?.interface_type ?? "",
-            "enableBanner": brandConfig?.enable_banner ?? false,
-            "enableMessageSound": brandConfig?.enable_message_sound ?? false,
-            "enableUserFeedback": brandConfig?.enable_user_feedback ?? false,
-            "streamAIResponses": brandConfig?.stream_ai_responses ?? false,
-            "enableAIDisclaimer": brandConfig?.enable_ai_disclaimer ?? false
-        ]
-        
-        // Add banner data
-        brandConfigData["banner"] = [
-            "title": brandConfig?.banner?.title ?? "",
-            "description": brandConfig?.banner?.description ?? ""
-        ]
-        
-        // Add colors data
-        brandConfigData["colors"] = [
-            "brandColor": brandConfig?.colors?.brand_color ?? "",
-            "titleBarColor": brandConfig?.colors?.title_bar_color ?? ""
-        ]
-        
-        // Add footer data
-        brandConfigData["footer"] = [
-            "footerLink": brandConfig?.footer?.footer_link ?? "",
-            "footerLinkText": brandConfig?.footer?.footer_link_text ?? "",
-            "showPoweredBy": brandConfig?.footer?.show_powered_by ?? false,
-            "showCustomFooter": brandConfig?.footer?.show_custom_footer ?? false
-        ]
-        
-        // Add launcher properties
-        brandConfigData["launcherProperties"] = [
-            "text": brandConfig?.launcher_properties?.text ?? ""
-        ]
-        
-        // Add interface properties
-        brandConfigData["interfaceProperties"] = [
-            "position": brandConfig?.interface_properties?.position ?? "",
-            "sideSpacing": brandConfig?.interface_properties?.side_spacing ?? 0,
-            "bottomSpacing": brandConfig?.interface_properties?.bottom_spacing ?? 0
-        ]
-        
-        // Add AI disclaimer
-        brandConfigData["aiDisclaimer"] = [
-            "message": brandConfig?.ai_disclaimer?.message ?? ""
-        ]
-        
-        // Add images
-        brandConfigData["images"] = [
-            "launcherImageUrl": brandConfig?.images?.launcher_image_url?.url ?? "",
-            "headerImageUrl": brandConfig?.images?.header_image_url?.url ?? "",
-            "agentImageUrl": brandConfig?.images?.agent_image_url?.url ?? "",
-            "bannerImageUrl": brandConfig?.images?.banner_image_url?.url ?? ""
-        ]
-        
-        eventData["brandConfig"] = brandConfigData
-        
-        // Emit initialization success event
-        let event = ChatbotEvent(type: .chatInitialized, data: eventData)
-        config.eventHandler?(event)
-        
-        ChatbotUtils.logSuccess("Chatbot initialized successfully with API key: \(config.apiKey)")
     }
     
     public func createButton() -> UIButton? {
@@ -282,7 +204,7 @@ public class Chatbot {
         return configuration
     }
     
-    public func getCustomBottomConfig() -> CustomBottomConfig? {
+    public func getCustomBottomConfig() -> CustomButtonConfig? {
         return customBottomConfig
     }
     

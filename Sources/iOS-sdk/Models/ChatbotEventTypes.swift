@@ -47,7 +47,7 @@ public struct UserProfile: Codable {
 public typealias ChatbotEventHandler = (ChatbotEvent) -> Void 
 
 // MARK: - Custom Bottom Configuration
-public struct CustomBottomConfig {
+public struct CustomButtonConfig {
     public let launchType: String?
     public let imageURL: String?
     public let title: String?
@@ -69,10 +69,10 @@ public struct CustomBottomConfig {
     }
     
     // Factory method to create from API response
-    public static func from(apiResponse: ChatbotAPIResponse) -> CustomBottomConfig {
+    public static func from(apiResponse: ChatbotAPIResponse) -> CustomButtonConfig {
         let brandConfig = apiResponse.user?.org_info?.brand_config
         
-        return CustomBottomConfig(
+        return CustomButtonConfig(
             launchType: brandConfig?.launcher_type,
             imageURL: brandConfig?.images?.launcher_image_url?.url,
             title: brandConfig?.launcher_properties?.text,
