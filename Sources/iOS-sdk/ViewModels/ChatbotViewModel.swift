@@ -46,15 +46,6 @@ public class ChatbotViewModel: ObservableObject {
         Chatbot.shared.initialize(config: config)
     }
     
-    public func createChatbotButton() -> UIButton? {
-        guard isInitialized else {
-            errorMessage = "Chatbot must be initialized before creating button"
-            return nil
-        }
-        
-        return Chatbot.shared.createButton()
-    }
-    
     public func openChatbot() {
         guard isInitialized else {
             errorMessage = "Chatbot must be initialized before opening"

@@ -11,8 +11,4 @@ public struct iOS_sdk {
     public static func initializeChatbot(config: ChatbotConfiguration) {
         Chatbot.shared.initialize(config: config)
     }
-    
-    public static func refreshSession() {
-        Chatbot.shared.refreshSession()
-    }
 }

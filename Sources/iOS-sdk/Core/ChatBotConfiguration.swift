@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 // MARK: - Chatbot Configuration
 public struct ChatbotConfiguration {
@@ -8,7 +9,7 @@ public struct ChatbotConfiguration {
     public let userToken: String?
     public let userProfile: UserProfile?
     public let eventHandler: ChatbotEventHandler?
-    public let parentFrame: CGRect?
+    public let parentView: UIView?
     
     public init(
         apiKey: String,
@@ -17,7 +18,7 @@ public struct ChatbotConfiguration {
         userToken: String? = nil,
         userProfile: UserProfile? = nil,
         eventHandler: ChatbotEventHandler? = nil,
-        parentFrame: CGRect? = nil
+        parentView: UIView? = nil
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
@@ -25,6 +26,6 @@ public struct ChatbotConfiguration {
         self.userToken = userToken
         self.userProfile = userProfile
         self.eventHandler = eventHandler
-        self.parentFrame = parentFrame
+        self.parentView = parentView
     }
 }

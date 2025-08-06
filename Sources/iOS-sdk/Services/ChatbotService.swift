@@ -5,7 +5,6 @@ import UIKit
 @MainActor
 public protocol ChatbotServiceProtocol {
     func initializeChatbot(with config: ChatbotConfiguration) -> Bool
-    func createButton() -> UIButton?
     func openChatbot()
     func closeChatbot()
     func refreshSession()
@@ -40,15 +39,7 @@ public class ChatbotService: ChatbotServiceProtocol {
         print("✅ Chatbot service initialized successfully")
         return true
     }
-    
-    public func createButton() -> UIButton? {
-        guard let config = configuration else {
-            print("❌ Chatbot service not initialized")
-            return nil
-        }
-        
-        return Chatbot.shared.createButton()
-    }
+
     
     public func openChatbot() {
         guard let config = configuration else {
