@@ -4,6 +4,7 @@ import Foundation
 // MARK: - Chatbot Configuration
 public struct ChatbotConfiguration {
     public let apiKey: String
+    public let orgId: String?
     public let userId: String?
     public let userToken: String?
     public let userProfile: UserProfile?
@@ -11,12 +12,14 @@ public struct ChatbotConfiguration {
     
     public init(
         apiKey: String,
+        orgId: String? = nil,
         userId: String? = nil,
         userToken: String? = nil,
         userProfile: UserProfile? = nil,
         eventHandler: ChatbotEventHandler? = nil
     ) {
         self.apiKey = apiKey
+        self.orgId = orgId
         self.userId = userId
         self.userToken = userToken
         self.userProfile = userProfile
@@ -50,19 +53,53 @@ public class Chatbot {
             return
         }
         
+        // Make API call to validate chatbot
+        ChatbotNetworkService.shared.validateChatbot(
+            apiKey: config.apiKey,
+            orgId: config.orgId,
+            userId: config.userId,
+            userToken: config.userToken
+        ) { [weak self] result in
+            switch result {
+            case .success(let apiResponse):
+                // API call successful, proceed with initialization
+                self?.completeInitialization(with: config, apiResponse: apiResponse)
+                
+            case .failure(let error):
+                // API call failed, emit failure event
+                let event = ChatbotEvent(
+                    type: .chatInitializationFailed,
+                    data: ["error": error.localizedDescription]
+                )
+                config.eventHandler?(event)
+                ChatbotUtils.logError("Chatbot initialization failed: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func completeInitialization(with config: ChatbotConfiguration, apiResponse: ChatbotAPIResponse) {
         self.configuration = config
         self.isInitialized = true
         
         // Emit initialization success event
         let event = ChatbotEvent(type: .chatInitialized, data: [
             "apiKey": config.apiKey,
+            "orgId": config.orgId ?? "",
             "userId": config.userId ?? "",
             "hasUserToken": config.userToken != nil,
-            "hasUserProfile": config.userProfile != nil
+            "hasUserProfile": config.userProfile != nil,
+            "apiResponse": [
+                "success": apiResponse.success,
+                "message": apiResponse.message ?? "",
+                "chatbotId": apiResponse.data?.chatbot_id ?? "",
+                "chatbotName": apiResponse.data?.chatbot_name ?? "",
+                "chatbotUrl": apiResponse.data?.chatbot_url ?? "",
+                "status": apiResponse.data?.status ?? ""
+            ]
         ])
         config.eventHandler?(event)
         
-        print("Chatbot initialized successfully with API key: \(config.apiKey)")
+        ChatbotUtils.logSuccess("Chatbot initialized successfully with API key: \(config.apiKey)")
     }
     
     public func createButton() -> UIButton? {

@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 
 // MARK: - Chatbot Service Protocol
+@MainActor
 public protocol ChatbotServiceProtocol {
     func initializeChatbot(with config: ChatbotConfiguration) -> Bool
     func createButton() -> UIButton?

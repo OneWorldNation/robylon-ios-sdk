@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0BFD828F2E3E4DCB00BC6897 /* iOS-sdk in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD828E2E3E4DCB00BC6897 /* iOS-sdk */; };
+		0BFD82B72E4391B500BC6897 /* iOS-sdk in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD82B62E4391B500BC6897 /* iOS-sdk */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BFD828F2E3E4DCB00BC6897 /* iOS-sdk in Frameworks */,
+				0BFD82B72E4391B500BC6897 /* iOS-sdk in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = ExampleApp;
 			packageProductDependencies = (
 				0BFD828E2E3E4DCB00BC6897 /* iOS-sdk */,
+				0BFD82B62E4391B500BC6897 /* iOS-sdk */,
 			);
 			productName = ExampleApp;
 			productReference = 0BFD82542E3E4C0300BC6897 /* ExampleApp.app */;
@@ -101,7 +104,7 @@
 			mainGroup = 0BFD824B2E3E4C0300BC6897;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0BFD828D2E3E4DCB00BC6897 /* XCLocalSwiftPackageReference "../../iOS-sdk" */,
+				0BFD82B52E4391B500BC6897 /* XCLocalSwiftPackageReference "../../iOS-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0BFD82552E3E4C0300BC6897 /* Products */;
@@ -331,7 +334,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0BFD828D2E3E4DCB00BC6897 /* XCLocalSwiftPackageReference "../../iOS-sdk" */ = {
+		0BFD82B52E4391B500BC6897 /* XCLocalSwiftPackageReference "../../iOS-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../iOS-sdk";
 		};
@@ -339,6 +342,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		0BFD828E2E3E4DCB00BC6897 /* iOS-sdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "iOS-sdk";
+		};
+		0BFD82B62E4391B500BC6897 /* iOS-sdk */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "iOS-sdk";
 		};

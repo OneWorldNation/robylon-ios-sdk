@@ -20,6 +20,7 @@ public struct ChatbotUtils {
     }
     
     // MARK: - UI Helpers
+    @MainActor
     public static func createStyledButton(
         title: String,
         backgroundColor: UIColor = .systemBlue,

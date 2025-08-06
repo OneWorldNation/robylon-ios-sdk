@@ -19,6 +19,7 @@ public class ChatbotViewModel: ObservableObject {
     // MARK: - Public Methods
     public func initializeChatbot(
         apiKey: String,
+        orgId: String? = nil,
         userId: String? = nil,
         userToken: String? = nil,
         userProfile: UserProfile? = nil
@@ -34,6 +35,7 @@ public class ChatbotViewModel: ObservableObject {
         
         let config = ChatbotConfiguration(
             apiKey: apiKey,
+            orgId: orgId,
             userId: userId,
             userToken: userToken,
             userProfile: userProfile,
@@ -117,8 +119,12 @@ public class ChatbotViewModel: ObservableObject {
 @MainActor
 public class ChatbotConfigurationViewModel: ObservableObject {
     
+    // MARK: - Initializer
+    public init() {}
+    
     // MARK: - Published Properties
     @Published public var apiKey: String = ""
+    @Published public var orgId: String = ""
     @Published public var userId: String = ""
     @Published public var userToken: String = ""
     @Published public var userName: String = ""
@@ -139,6 +145,9 @@ public class ChatbotConfigurationViewModel: ObservableObject {
     
     public var configurationSummary: String {
         var summary = "API Key: \(apiKey)"
+        if !orgId.isEmpty {
+            summary += "\nOrg ID: \(orgId)"
+        }
         if !userId.isEmpty {
             summary += "\nUser ID: \(userId)"
         }
@@ -154,6 +163,7 @@ public class ChatbotConfigurationViewModel: ObservableObject {
     // MARK: - Public Methods
     public func resetConfiguration() {
         apiKey = ""
+        orgId = ""
         userId = ""
         userToken = ""
         userName = ""
@@ -162,6 +172,7 @@ public class ChatbotConfigurationViewModel: ObservableObject {
     
     public func loadDefaultConfiguration() {
         apiKey = "YOUR_API_KEY"
+        orgId = "30e4fab6-cadb-4b99-b1e7-30fca6e147ac"
         userId = "demo-user-123"
         userToken = "demo-token-456"
         userName = "Demo User"

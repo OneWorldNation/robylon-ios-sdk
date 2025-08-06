@@ -11,6 +11,7 @@ public struct iOS_sdk {
     // MARK: - Chatbot Methods
     public static func initializeChatbot(
         apiKey: String,
+        orgId: String? = nil,
         userId: String? = nil,
         userToken: String? = nil,
         userProfile: UserProfile? = nil,
@@ -18,6 +19,7 @@ public struct iOS_sdk {
     ) {
         let config = ChatbotConfiguration(
             apiKey: apiKey,
+            orgId: orgId,
             userId: userId,
             userToken: userToken,
             userProfile: userProfile,
@@ -44,5 +46,49 @@ public struct iOS_sdk {
     
     public static func refreshChatbotSession() {
         Chatbot.shared.refreshSession()
+    }
+    
+    // MARK: - MVVM Helper Methods
+    public static func createChatbotViewModel() -> ChatbotViewModel {
+        return ChatbotViewModel()
+    }
+    
+    public static func createChatbotConfigurationViewModel() -> ChatbotConfigurationViewModel {
+        return ChatbotConfigurationViewModel()
+    }
+    
+    public static func createChatbotService() -> ChatbotServiceProtocol {
+        return ChatbotService.shared
+    }
+    
+    // MARK: - Utility Methods
+    public static func validateAPIKey(_ apiKey: String) -> Bool {
+        return ChatbotUtils.isValidAPIKey(apiKey)
+    }
+    
+    public static func validateEmail(_ email: String) -> Bool {
+        return ChatbotUtils.isValidEmail(email)
+    }
+    
+    public static func validateUserId(_ userId: String) -> Bool {
+        return ChatbotUtils.isValidUserId(userId)
+    }
+    
+    public static func createStyledButton(
+        title: String,
+        backgroundColor: UIColor = ChatbotConstants.Colors.primaryBlue,
+        textColor: UIColor = .white,
+        cornerRadius: CGFloat = ChatbotConstants.defaultCornerRadius,
+        fontSize: CGFloat = ChatbotConstants.defaultFontSize,
+        fontWeight: UIFont.Weight = .medium
+    ) -> UIButton {
+        return ChatbotUtils.createStyledButton(
+            title: title,
+            backgroundColor: backgroundColor,
+            textColor: textColor,
+            cornerRadius: cornerRadius,
+            fontSize: fontSize,
+            fontWeight: fontWeight
+        )
     }
 }
