@@ -190,7 +190,7 @@ public class ChatbotNetworkService {
             let apiResponse = try JSONDecoder().decode(ChatbotAPIResponse.self, from: data)
             
             if httpResponse.statusCode == 200 {
-                ChatbotUtils.logSuccess("Chatbot initialization successful")
+                ChatbotUtils.logSuccess("Chatbot API initialization successful")
                 completion(.success(apiResponse))
             } else {
                 ChatbotUtils.logError("API Error: HTTP \(httpResponse.statusCode)")

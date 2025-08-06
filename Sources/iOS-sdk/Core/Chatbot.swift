@@ -126,14 +126,15 @@ public class Chatbot {
         
         eventData["brandConfig"] = brandConfigData
         
-        // Emit initialization success event
-        let event = ChatbotEvent(type: .chatInitialized, data: eventData)
-        config.eventHandler?(event)
         
         // Create and add custom button to parent view
         createAndAddCustomButton(to: config.parentView)
         
-        ChatbotUtils.logSuccess("Chatbot initialized successfully with API key: \(config.apiKey)")
+        // Emit initialization success event
+        let event = ChatbotEvent(type: .chatbotButtonLoaded, data: eventData)
+        config.eventHandler?(event)
+        
+        ChatbotUtils.logSuccess("Chatbot button added successfully with API key: \(config.apiKey)")
     }
     
     private func createAndAddCustomButton(to parentView: UIView?) {
