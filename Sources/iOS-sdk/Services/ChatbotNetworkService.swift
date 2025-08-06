@@ -17,16 +17,80 @@ public struct ChatbotAPIRequest: Codable {
 }
 
 public struct ChatbotAPIResponse: Codable {
-    public let success: Bool
-    public let message: String?
-    public let data: ChatbotData?
-    public let error: String?
+    public let user: UserData?
     
-    public struct ChatbotData: Codable {
+    public struct UserData: Codable {
+        public let org_info: OrgInfo?
+    }
+    
+    public struct OrgInfo: Codable {
+        public let brand_config: BrandConfig?
+    }
+    
+    public struct BrandConfig: Codable {
+        public let name: String?
+        public let banner: Banner?
+        public let colors: Colors?
+        public let footer: Footer?
+        public let images: Images?
+        public let tagline: String?
         public let chatbot_id: String?
-        public let chatbot_name: String?
-        public let chatbot_url: String?
-        public let status: String?
+        public let ai_disclaimer: AIDisclaimer?
+        public let enable_banner: Bool?
+        public let launcher_type: String?
+        public let brand_logo_url: String?
+        public let interface_type: String?
+        public let created_by_name: String?
+        public let launcher_properties: LauncherProperties?
+        public let stream_ai_responses: Bool?
+        public let enable_ai_disclaimer: Bool?
+        public let enable_message_sound: Bool?
+        public let enable_user_feedback: Bool?
+        public let interface_properties: InterfaceProperties?
+    }
+    
+    public struct Banner: Codable {
+        public let title: String?
+        public let description: String?
+    }
+    
+    public struct Colors: Codable {
+        public let brand_color: String?
+        public let title_bar_color: String?
+    }
+    
+    public struct Footer: Codable {
+        public let footer_link: String?
+        public let show_powered_by: Bool?
+        public let footer_link_text: String?
+        public let message_box_value: String?
+        public let show_custom_footer: Bool?
+    }
+    
+    public struct Images: Codable {
+        public let agent_image_url: ImageData?
+        public let banner_image_url: ImageData?
+        public let header_image_url: ImageData?
+        public let launcher_image_url: ImageData?
+    }
+    
+    public struct ImageData: Codable {
+        public let url: String?
+        public let size: Int?
+    }
+    
+    public struct AIDisclaimer: Codable {
+        public let message: String?
+    }
+    
+    public struct LauncherProperties: Codable {
+        public let text: String?
+    }
+    
+    public struct InterfaceProperties: Codable {
+        public let position: String?
+        public let side_spacing: Int?
+        public let bottom_spacing: Int?
     }
 }
 
@@ -126,11 +190,11 @@ public class ChatbotNetworkService {
             let apiResponse = try JSONDecoder().decode(ChatbotAPIResponse.self, from: data)
             
             if httpResponse.statusCode == 200 {
-                ChatbotUtils.logSuccess("Chatbot validation successful")
+                ChatbotUtils.logSuccess("Chatbot initialization successful")
                 completion(.success(apiResponse))
             } else {
-                ChatbotUtils.logError("API Error: \(apiResponse.error ?? "Unknown error")")
-                completion(.failure(ChatbotNetworkError.apiError(apiResponse.error ?? "Unknown error")))
+                ChatbotUtils.logError("API Error: HTTP \(httpResponse.statusCode)")
+                completion(.failure(ChatbotNetworkError.apiError("HTTP \(httpResponse.statusCode)")))
             }
             
         } catch {
