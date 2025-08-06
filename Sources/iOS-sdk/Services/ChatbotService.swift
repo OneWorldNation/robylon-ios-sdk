@@ -35,7 +35,7 @@ public class ChatbotService: ChatbotServiceProtocol {
         }
         
         self.configuration = config
-        Chatbot.shared.initialize(with: config)
+        Chatbot.shared.initialize(config: config)
         
         print("✅ Chatbot service initialized successfully")
         return true

@@ -43,7 +43,7 @@ public class ChatbotViewModel: ObservableObject {
         )
         
         self.configuration = config
-        Chatbot.shared.initialize(with: config)
+        Chatbot.shared.initialize(config: config)
     }
     
     public func createChatbotButton() -> UIButton? {

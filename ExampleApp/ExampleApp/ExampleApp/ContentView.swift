@@ -117,14 +117,17 @@ struct ContentView: View {
                 Text(chatbotViewModel.errorMessage ?? "")
             }
             .onAppear {
-                iOS_sdk.initializeChatbot(
-                    apiKey: Self.demoConfig.apiKey,
-                    orgId: Self.demoConfig.orgId,
-                    userId: Self.demoConfig.userId,
-                    userToken: Self.demoConfig.userToken,
-                    userProfile: Self.demoConfig.userProfile,
-                    eventHandler: Self.demoConfig.eventHandler
+                let config = ChatbotConfiguration(
+                    apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
+                    orgId: nil,
+                    userId: "",
+                    userToken: "asdsadassa",
+                    userProfile: nil,
+                    eventHandler: { event in
+                        print("[SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
+                    }
                 )
+                iOS_sdk.initializeChatbot(config: config)
             }
         }
     }

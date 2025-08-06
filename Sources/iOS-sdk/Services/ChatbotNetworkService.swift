@@ -45,30 +45,23 @@ public class ChatbotNetworkService {
     private init() {}
     
     // MARK: - Public Methods
-    public func validateChatbot(
-        apiKey: String,
-        orgId: String?,
-        userId: String?,
-        userToken: String?,
+    public func initialiseChatbot(
+        config: ChatbotConfiguration,
         completion: @escaping (Result<ChatbotAPIResponse, Error>) -> Void
     ) {
-        // Use provided orgId or extract from apiKey
-        let finalOrgId = orgId ?? extractOrgId(from: apiKey)
-        let clientUserId = userId ?? generateClientUserId()
-        let token = userToken ?? apiKey
-        
+        let finalOrgId = config.apiKey
+        let clientUserId = config.userId ?? ""
+        let token = config.userToken ?? ""
         let request = ChatbotAPIRequest(
             clientUserId: clientUserId,
             orgId: finalOrgId,
             token: token,
             extraInfo: [:]
         )
-        
         guard let url = URL(string: "\(baseURL)/chat/chatbot/get/") else {
             completion(.failure(ChatbotNetworkError.invalidURL))
             return
         }
-        
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -86,20 +79,16 @@ public class ChatbotNetworkService {
         urlRequest.setValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
         urlRequest.setValue("same-site", forHTTPHeaderField: "Sec-Fetch-Site")
         urlRequest.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
-        
         do {
             let jsonData = try JSONEncoder().encode(request)
             urlRequest.httpBody = jsonData
-            
-            ChatbotUtils.logInfo("Making API request to validate chatbot")
-            
+            ChatbotUtils.logInfo("Making API request to initialise chatbot")
             let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
                 DispatchQueue.main.async {
                     self?.handleAPIResponse(data: data, response: response, error: error, completion: completion)
                 }
             }
             task.resume()
-            
         } catch {
             ChatbotUtils.logError("Failed to encode request: \(error.localizedDescription)")
             completion(.failure(error))

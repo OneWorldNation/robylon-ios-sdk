@@ -15,7 +15,7 @@ public class Chatbot {
     private init() {}
     
     // MARK: - Public Methods
-    public func initialize(with config: ChatbotConfiguration) {
+    public func initialize(config: ChatbotConfiguration) {
         guard !isInitialized else {
             print("Chatbot is already initialized")
             return
@@ -28,19 +28,13 @@ public class Chatbot {
         }
         
         // Make API call to validate chatbot
-        ChatbotNetworkService.shared.validateChatbot(
-            apiKey: config.apiKey,
-            orgId: config.orgId,
-            userId: config.userId,
-            userToken: config.userToken
+        ChatbotNetworkService.shared.initialiseChatbot(
+            config: config
         ) { [weak self] result in
             switch result {
             case .success(let apiResponse):
-                // API call successful, proceed with initialization
                 self?.completeInitialization(with: config, apiResponse: apiResponse)
-                
             case .failure(let error):
-                // API call failed, emit failure event
                 let event = ChatbotEvent(
                     type: .chatInitializationFailed,
                     data: ["error": error.localizedDescription]

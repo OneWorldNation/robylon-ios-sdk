@@ -9,23 +9,8 @@ public struct iOS_sdk {
     }
     
     // MARK: - Chatbot Methods
-    public static func initializeChatbot(
-        apiKey: String,
-        orgId: String? = nil,
-        userId: String? = nil,
-        userToken: String? = nil,
-        userProfile: UserProfile? = nil,
-        eventHandler: ChatbotEventHandler? = nil
-    ) {
-        let config = ChatbotConfiguration(
-            apiKey: apiKey,
-            orgId: orgId,
-            userId: userId,
-            userToken: userToken,
-            userProfile: userProfile,
-            eventHandler: eventHandler
-        )
-        Chatbot.shared.initialize(with: config)
+    public static func initializeChatbot(config: ChatbotConfiguration) {
+        Chatbot.shared.initialize(config: config)
     }
     
     public static func createChatbotButton() -> UIButton? {
