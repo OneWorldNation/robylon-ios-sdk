@@ -11,17 +11,17 @@ import UIKit
 public class CustomButton: UIButton {
     
     // MARK: - Properties
-    private var callback: ((String) -> Void)?
+    private var callback: (() -> Void)?
     private var config: CustomButtonConfig?
     
     // MARK: - Initializers
-    public convenience init(callback: @escaping (String) -> Void) {
+    public convenience init(callback: @escaping () -> Void) {
         self.init(type: .system)
         self.callback = callback
         setupDefaultButton()
     }
     
-    public convenience init(config: CustomButtonConfig, callback: @escaping (String) -> Void) {
+    public convenience init(config: CustomButtonConfig, callback: @escaping () -> Void) {
         self.init(type: .system)
         self.config = config
         self.callback = callback
@@ -119,7 +119,7 @@ public class CustomButton: UIButton {
     }
     
     @objc private func buttonTapped() {
-        callback?("Button tapped")
+        callback?()
     }
 }
 

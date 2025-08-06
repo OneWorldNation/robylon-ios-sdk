@@ -144,9 +144,9 @@ public class Chatbot {
         }
         
         // Create the custom button
-        let customButton = CustomButton(config: customConfig) { [weak self] message in
-            self?.handleButtonCallback(message)
-        }
+        let customButton = CustomButton(config: customConfig, callback: { [weak self] in
+            self?.handleButtonCallback()
+        })
         
         // Use provided parent view or fallback to root view controller
         let targetView: UIView
@@ -219,10 +219,6 @@ public class Chatbot {
             return
         }
         
-        // Emit button clicked event
-        let buttonEvent = ChatbotEvent(type: .chatbotButtonClicked)
-        config.eventHandler?(buttonEvent)
-        
         // Create and present WebViewController
         let webVC = WebViewController()
         webVC.apiKey = config.apiKey
@@ -233,16 +229,12 @@ public class Chatbot {
         
         self.webViewController = webVC
         
-        // Emit chatbot opened event
-        let openedEvent = ChatbotEvent(type: .chatbotOpened)
-        config.eventHandler?(openedEvent)
-        
         // Present the WebViewController
         if let topVC = UIApplication.shared.windows.first?.rootViewController {
             topVC.present(webVC, animated: true) {
-                // Emit app ready event after presentation
-                let appReadyEvent = ChatbotEvent(type: .chatbotAppReady)
-                config.eventHandler?(appReadyEvent)
+                // Emit chatbot opened event
+                let openedEvent = ChatbotEvent(type: .chatbotOpened)
+                config.eventHandler?(openedEvent)
             }
         }
     }
@@ -273,11 +265,15 @@ public class Chatbot {
     }
     
     // MARK: - Private Methods
-    private func handleButtonCallback(_ message: String) {
+    private func handleButtonCallback() {
         guard let config = configuration else { return }
         
         // Handle any button callbacks here
-        print("Button callback received: \(message)")
+        print("Button callback received")
+        
+        // Emit button clicked event
+        let buttonEvent = ChatbotEvent(type: .chatbotButtonClicked)
+        config.eventHandler?(buttonEvent)
         
         // Open chatbot when button is tapped
         openChatbot()
