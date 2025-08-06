@@ -8,6 +8,7 @@ public struct ChatbotConfiguration {
     public let userToken: String?
     public let userProfile: UserProfile?
     public let eventHandler: ChatbotEventHandler?
+    public let parentFrame: CGRect?
     
     public init(
         apiKey: String,
@@ -15,7 +16,8 @@ public struct ChatbotConfiguration {
         userId: String? = nil,
         userToken: String? = nil,
         userProfile: UserProfile? = nil,
-        eventHandler: ChatbotEventHandler? = nil
+        eventHandler: ChatbotEventHandler? = nil,
+        parentFrame: CGRect? = nil
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
@@ -23,5 +25,6 @@ public struct ChatbotConfiguration {
         self.userToken = userToken
         self.userProfile = userProfile
         self.eventHandler = eventHandler
+        self.parentFrame = parentFrame
     }
 }

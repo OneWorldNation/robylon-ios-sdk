@@ -51,7 +51,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler {
 
     private func loadChatbotHTML() {
         // Create user profile JSON
-        let userProfileJson = userProfile?.toDictionary() ?? [:]
+        let userProfileJson = ""
         let userProfileString = String(data: try! JSONSerialization.data(withJSONObject: userProfileJson), encoding: .utf8) ?? "{}"
         
         let html = """

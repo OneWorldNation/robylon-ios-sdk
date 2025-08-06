@@ -1,7 +1,9 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 import UIKit
+import Foundation
 
+// MARK: - iOS SDK Main Interface
 @MainActor
 public struct iOS_sdk {
     public static func createButton(action: @escaping (String) -> Void) -> UIButton {
@@ -21,19 +23,32 @@ public struct iOS_sdk {
         Chatbot.shared.openChatbot()
     }
     
-    public static func closeChatbot() {
-        Chatbot.shared.closeChatbot()
-    }
-    
-    public static func isChatbotOpen() -> Bool {
-        return Chatbot.shared.isChatbotOpen()
-    }
-    
-    public static func refreshChatbotSession() {
+    public static func refreshSession() {
         Chatbot.shared.refreshSession()
     }
     
-    // MARK: - MVVM Helper Methods
+    // MARK: - Custom Button Methods
+    public static func createCustomButton(config: CustomBottomConfig, action: @escaping (String) -> Void) -> UIButton {
+        return CustomButton(config: config, callback: action)
+    }
+    
+    public static func createStyledButton(
+        title: String? = nil,
+        backgroundColor: String? = nil,
+        imageURL: String? = nil,
+        action: @escaping (String) -> Void
+    ) -> UIButton {
+        let config = CustomBottomConfig(
+            launchType: "TEXT",
+            imageURL: imageURL,
+            title: title,
+            backgroundColor: backgroundColor,
+            interfaceProperties: nil
+        )
+        return CustomButton(config: config, callback: action)
+    }
+    
+    // MARK: - MVVM Components
     public static func createChatbotViewModel() -> ChatbotViewModel {
         return ChatbotViewModel()
     }
@@ -44,36 +59,5 @@ public struct iOS_sdk {
     
     public static func createChatbotService() -> ChatbotServiceProtocol {
         return ChatbotService.shared
-    }
-    
-    // MARK: - Utility Methods
-    public static func validateAPIKey(_ apiKey: String) -> Bool {
-        return ChatbotUtils.isValidAPIKey(apiKey)
-    }
-    
-    public static func validateEmail(_ email: String) -> Bool {
-        return ChatbotUtils.isValidEmail(email)
-    }
-    
-    public static func validateUserId(_ userId: String) -> Bool {
-        return ChatbotUtils.isValidUserId(userId)
-    }
-    
-    public static func createStyledButton(
-        title: String,
-        backgroundColor: UIColor = ChatbotConstants.Colors.primaryBlue,
-        textColor: UIColor = .white,
-        cornerRadius: CGFloat = ChatbotConstants.defaultCornerRadius,
-        fontSize: CGFloat = ChatbotConstants.defaultFontSize,
-        fontWeight: UIFont.Weight = .medium
-    ) -> UIButton {
-        return ChatbotUtils.createStyledButton(
-            title: title,
-            backgroundColor: backgroundColor,
-            textColor: textColor,
-            cornerRadius: cornerRadius,
-            fontSize: fontSize,
-            fontWeight: fontWeight
-        )
     }
 }

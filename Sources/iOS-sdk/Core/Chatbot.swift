@@ -10,6 +10,7 @@ public class Chatbot {
     private var configuration: ChatbotConfiguration?
     private var isInitialized = false
     private var webViewController: WebViewController?
+    private var customBottomConfig: CustomBottomConfig?
     
     // MARK: - Private Initializer
     private init() {}
@@ -48,6 +49,9 @@ public class Chatbot {
     private func completeInitialization(with config: ChatbotConfiguration, apiResponse: ChatbotAPIResponse) {
         self.configuration = config
         self.isInitialized = true
+        
+        // Create CustomBottomConfig from API response
+        self.customBottomConfig = CustomBottomConfig.from(apiResponse: apiResponse)
         
         // Extract brand config data
         let brandConfig = apiResponse.user?.org_info?.brand_config
@@ -135,15 +139,72 @@ public class Chatbot {
             return nil
         }
         
-        let button = CustomButton { [weak self] message in
-            self?.handleButtonCallback(message)
+        if let customConfig = customBottomConfig {
+            let button = CustomButton(config: customConfig) { [weak self] message in
+                self?.handleButtonCallback(message)
+            }
+            
+            // Position the button based on parent frame and interface properties
+            if let parentFrame = config.parentFrame, let interfaceProps = customConfig.interfaceProperties {
+                positionButton(button, in: parentFrame, with: interfaceProps)
+            }
+            
+            // Emit button loaded event
+            let event = ChatbotEvent(type: .chatbotButtonLoaded)
+            config.eventHandler?(event)
+            
+            return button
+        } else {
+            // Fallback to default button
+            let button = CustomButton { [weak self] message in
+                self?.handleButtonCallback(message)
+            }
+            
+            // Emit button loaded event
+            let event = ChatbotEvent(type: .chatbotButtonLoaded)
+            config.eventHandler?(event)
+            
+            return button
         }
+    }
+    
+    private func positionButton(_ button: UIButton, in parentFrame: CGRect, with interfaceProps: ChatbotAPIResponse.InterfaceProperties) {
+        guard let parentView = button.superview else { return }
         
-        // Emit button loaded event
-        let event = ChatbotEvent(type: .chatbotButtonLoaded)
-        config.eventHandler?(event)
+        // Remove existing constraints
+        button.removeFromSuperview()
+        parentView.addSubview(button)
         
-        return button
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Set position based on interface properties
+        let position = interfaceProps.position?.lowercased() ?? "right"
+        let sideSpacing = CGFloat(interfaceProps.side_spacing ?? 20)
+        let bottomSpacing = CGFloat(interfaceProps.bottom_spacing ?? 20)
+        
+        switch position {
+        case "left":
+            NSLayoutConstraint.activate([
+                button.leadingAnchor.constraint(equalTo: parentView.leadingAnchor, constant: sideSpacing),
+                button.bottomAnchor.constraint(equalTo: parentView.bottomAnchor, constant: -bottomSpacing)
+            ])
+        case "right":
+            NSLayoutConstraint.activate([
+                button.trailingAnchor.constraint(equalTo: parentView.trailingAnchor, constant: -sideSpacing),
+                button.bottomAnchor.constraint(equalTo: parentView.bottomAnchor, constant: -bottomSpacing)
+            ])
+        case "center":
+            NSLayoutConstraint.activate([
+                button.centerXAnchor.constraint(equalTo: parentView.centerXAnchor),
+                button.bottomAnchor.constraint(equalTo: parentView.bottomAnchor, constant: -bottomSpacing)
+            ])
+        default:
+            // Default to right position
+            NSLayoutConstraint.activate([
+                button.trailingAnchor.constraint(equalTo: parentView.trailingAnchor, constant: -sideSpacing),
+                button.bottomAnchor.constraint(equalTo: parentView.bottomAnchor, constant: -bottomSpacing)
+            ])
+        }
     }
     
     public func openChatbot() {
@@ -211,6 +272,9 @@ public class Chatbot {
         
         // Handle any button callbacks here
         print("Button callback received: \(message)")
+        
+        // Open chatbot when button is tapped
+        openChatbot()
     }
     
     // MARK: - Utility Methods
@@ -218,9 +282,14 @@ public class Chatbot {
         return configuration
     }
     
+    public func getCustomBottomConfig() -> CustomBottomConfig? {
+        return customBottomConfig
+    }
+    
     public func reset() {
         configuration = nil
         isInitialized = false
         webViewController = nil
+        customBottomConfig = nil
     }
 } 

@@ -25,15 +25,15 @@ public struct ChatbotEvent {
     public let timestamp: TimeInterval
     public let data: [String: Any]?
     
-    public init(type: ChatbotEventType, data: [String: Any]? = nil) {
+    public init(type: ChatbotEventType, timestamp: TimeInterval = Date().timeIntervalSince1970, data: [String: Any]? = nil) {
         self.type = type
-        self.timestamp = Date().timeIntervalSince1970
+        self.timestamp = timestamp
         self.data = data
     }
 }
 
 // MARK: - User Profile
-public struct UserProfile {
+public struct UserProfile: Codable {
     public let name: String?
     public let email: String?
     
@@ -41,18 +41,43 @@ public struct UserProfile {
         self.name = name
         self.email = email
     }
-    
-    public func toDictionary() -> [String: Any] {
-        var dict: [String: Any] = [:]
-        if let name = name {
-            dict["name"] = name
-        }
-        if let email = email {
-            dict["email"] = email
-        }
-        return dict
-    }
 }
 
 // MARK: - Event Handler Type
 public typealias ChatbotEventHandler = (ChatbotEvent) -> Void 
+
+// MARK: - Custom Bottom Configuration
+public struct CustomBottomConfig {
+    public let launchType: String?
+    public let imageURL: String?
+    public let title: String?
+    public let backgroundColor: String?
+    public let interfaceProperties: ChatbotAPIResponse.InterfaceProperties?
+    
+    public init(
+        launchType: String? = nil,
+        imageURL: String? = nil,
+        title: String? = nil,
+        backgroundColor: String? = nil,
+        interfaceProperties: ChatbotAPIResponse.InterfaceProperties? = nil
+    ) {
+        self.launchType = launchType
+        self.imageURL = imageURL
+        self.title = title
+        self.backgroundColor = backgroundColor
+        self.interfaceProperties = interfaceProperties
+    }
+    
+    // Factory method to create from API response
+    public static func from(apiResponse: ChatbotAPIResponse) -> CustomBottomConfig {
+        let brandConfig = apiResponse.user?.org_info?.brand_config
+        
+        return CustomBottomConfig(
+            launchType: brandConfig?.launcher_type,
+            imageURL: brandConfig?.images?.launcher_image_url?.url,
+            title: brandConfig?.launcher_properties?.text,
+            backgroundColor: brandConfig?.colors?.brand_color,
+            interfaceProperties: brandConfig?.interface_properties
+        )
+    }
+} 
