@@ -91,8 +91,8 @@ public class WebViewController: UIViewController {
         // Load the request
         webView.load(request)
         
-        // Emit chatbot loaded event
-        let event = ChatbotEvent(type: .chatbotLoaded, data: [
+        // Emit chatbot opened
+        let event = ChatbotEvent(type: .chatbotOpened, data: [
             "url": urlString,
             "apiKey": apiKey,
             "userId": userId ?? "",
@@ -171,10 +171,6 @@ extension WebViewController: WKNavigationDelegate {
         
         // Inject JavaScript after page loads
         injectJavaScript()
-        
-        // Emit chatbot app ready event
-        let event = ChatbotEvent(type: .chatbotAppReady)
-        eventHandler?(event)
     }
     
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
