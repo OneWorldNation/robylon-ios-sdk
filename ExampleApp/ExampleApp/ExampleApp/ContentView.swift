@@ -38,16 +38,6 @@ struct ContentView: View {
             .navigationTitle("Chatbot SDK")
             .onAppear {
                 iOS_sdk.initializeChatbot(config: Self.demoConfig)
-                
-                // Create custom button after initialization
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    if let customConfig = Chatbot.shared.getCustomBottomConfig() {
-                        self.customButton = iOS_sdk.createCustomButton(config: customConfig) { message in
-                            print("Custom button tapped: \(message)")
-                            iOS_sdk.openChatbot()
-                        }
-                    }
-                }
             }
         }
     }

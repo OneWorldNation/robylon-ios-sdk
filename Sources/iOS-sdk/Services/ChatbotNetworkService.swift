@@ -234,4 +234,4 @@ public enum ChatbotNetworkError: Error, LocalizedError {
             return "API Error: \(message)"
         }
     }
-} 
+}
