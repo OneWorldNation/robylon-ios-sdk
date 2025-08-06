@@ -51,8 +51,8 @@ final class WebViewController: UIViewController, WKScriptMessageHandler {
 
     private func loadChatbotHTML() {
         // Create user profile JSON
-        let userProfileJson = ""
-        let userProfileString = String(data: try! JSONSerialization.data(withJSONObject: userProfileJson), encoding: .utf8) ?? "{}"
+//        let userProfileJson = ""
+//        let userProfileString = String(data: try! JSONSerialization.data(withJSONObject: userProfileJson), encoding: .utf8) ?? "{}"
         
         let html = """
         <!DOCTYPE html>
@@ -139,7 +139,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler {
                     <strong>Configuration:</strong><br>
                     API Key: <span id="apiKey">\(apiKey)</span><br>
                     User ID: <span id="userId">\(userId ?? "Not set")</span><br>
-                    User Profile: <span id="userProfile">\(userProfileString)</span>
+                    User Profile: <span id="userProfile"></span>
                 </div>
                 
                 <div class="chat-area" id="chatArea">

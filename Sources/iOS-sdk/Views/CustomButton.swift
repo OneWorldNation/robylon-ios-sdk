@@ -61,7 +61,7 @@ public class CustomButton: UIButton {
         }
         
         // Set title color (white for dark backgrounds, black for light backgrounds)
-        setTitleColor(.white, for: .normal)
+        setTitleColor(.black, for: .normal)
         
         // Set background color
         if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
@@ -78,9 +78,9 @@ public class CustomButton: UIButton {
         layer.shadowRadius = 4
         
         // Load image if available
-        if let imageURLString = config.imageURL, !imageURLString.isEmpty {
-            loadImage(from: imageURLString)
-        }
+//        if let imageURLString = config.imageURL, !imageURLString.isEmpty {
+//            loadImage(from: imageURLString)
+//        }
         
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
