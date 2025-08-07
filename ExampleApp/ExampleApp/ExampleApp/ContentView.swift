@@ -14,13 +14,14 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Text("🤖 Chatbot SDK Demo")
+                Text("🤖 Chatbot SDK Demo to integrate with Swiftui")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding()
                 
                 Spacer()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()
             .navigationTitle("Chatbot SDK")
             .background(
@@ -36,9 +37,12 @@ struct ContentView: View {
         let config = ChatbotConfiguration(
             apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
             orgId: nil,
-            userId: "",
+            userId: UUID().uuidString, // Generate a proper userId
             userToken: "asdsadassa",
-            userProfile: nil,
+            userProfile: UserProfile(
+                name: "Test User",
+                email: "test@example.com"
+            ),
             eventHandler: { event in
                 print("[SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
             },
