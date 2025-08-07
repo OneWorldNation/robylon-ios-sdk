@@ -51,9 +51,11 @@ public class WebViewController: UIViewController {
             };
         })();
         """
-        let script = WKUserScript(source: logInjectionScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        userContentController.addUserScript(script)
-        userContentController.add(self, name: "jsLogger")
+        #if DEBUG
+//            let script = WKUserScript(source: logInjectionScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+//            userContentController.addUserScript(script)
+//            userContentController.add(self, name: "jsLogger")
+        #endif
         configuration.userContentController = userContentController
         
         // Create web view
@@ -74,7 +76,7 @@ public class WebViewController: UIViewController {
         ])
         
         // Add close button
-        addCloseButton()
+//        addCloseButton()
     }
     
     private func loadChatbotURL() {
@@ -147,6 +149,23 @@ public class WebViewController: UIViewController {
         let userToken = self.userToken?.isEmpty == false ? self.userToken! : nil
         
         let script = """
+        // Add window.postMessage listener to capture responses
+        window.addEventListener('message', function(event) {
+            console.log("📨 window.postMessage received:", event.data);
+            
+            // Forward the message to native app
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.chatbotHandler) {
+                window.webkit.messageHandlers.chatbotHandler.postMessage({
+                    type: "postMessageResponse",
+                    data: event.data,
+                    origin: event.origin,
+                    source: event.source ? "external" : "internal",
+                    timestamp: Date.now()
+                });
+            }
+        });
+        
+        // Send initial events
         window.dispatchEvent(new MessageEvent('message', { data: { name: 'openFrame', domain: 'app-domain.com' } }))
         
         window.dispatchEvent(new MessageEvent('message', {
@@ -170,14 +189,14 @@ public class WebViewController: UIViewController {
             }
         }))
         
-        //console.log("✅ postMessage events scheduled");
+        console.log("✅ Android.handlePayload, chatOperations, and postMessage listener setup complete");
         """
         
         webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 ChatbotUtils.logError("Failed to inject postMessage events: \(error.localizedDescription)")
             } else {
-                ChatbotUtils.logSuccess("postMessage events injected successfully")
+                ChatbotUtils.logSuccess("postMessage events and Android.handlePayload injected successfully")
             }
         }
     }
@@ -252,27 +271,32 @@ extension WebViewController: WKScriptMessageHandler {
         
         print("Received message from JavaScript: \(message.name) - \(message.body)")
         
-        if message.name == "nativeLogger", let body = message.body as? String {
-            if let data = body.data(using: .utf8) {
-//                do {
-//                    if let jsonDict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-//                        print("✅ Parsed Dictionary: \(jsonDict)")
-//                        if jsonDict["name"] as? String == "openFrame" {
-//                            print("🎯 openFrame message received")
-//                        } else if jsonDict["name"] as? String == "registerUserId" {
-//                            print("🎯 registerUserId message received")
-//                        }
-//                    }
-//                } catch {
-//                    print("❌ JSON parsing failed: \(error)")
-//                }
-            }
-        }
-        
         if message.name == "jsLogger", let body = message.body as? String {
             print("🪵 JavaScript Log: \(body)")
         }
         
+        // Handle postMessage responses
+        if message.name == "chatbotHandler",
+           let body = message.body as? [String: Any],
+           let type = body["type"] as? String,
+           type == "postMessageResponse" {
+            
+            print("📨 Processing postMessage response")
+            handlePostMessageResponse(body)
+            return
+        }
+        
+        // Handle Android.handlePayload style events
+        if message.name == "chatbotHandler",
+           let body = message.body as? [String: Any],
+           let operation = body["operation"] as? String {
+            
+            print("🔧 Handling operation: \(operation)")
+            handleOperation(operation, data: body)
+            return
+        }
+        
+        // Handle traditional message events
         guard message.name == "chatbotHandler",
               let body = message.body as? [String: Any],
               let type = body["type"] as? String else {
@@ -308,5 +332,166 @@ extension WebViewController: WKScriptMessageHandler {
             ChatbotUtils.logInfo("Unhandled JavaScript event: \(type)")
         }
     }
+    
+    // MARK: - PostMessage Response Handling
+    private func handlePostMessageResponse(_ response: [String: Any]) {
+        guard let data = response["data"] else {
+            print("📨 No data in postMessage response")
+            return
+        }
+        
+        let origin = response["origin"] as? String ?? "unknown"
+        let source = response["source"] as? String ?? "unknown"
+        let timestamp = response["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
+        
+        print("📨 PostMessage Response Details:")
+        print("📨 Origin: \(origin)")
+        print("📨 Source: \(source)")
+        print("📨 Timestamp: \(timestamp)")
+        print("📨 Data: \(data)")
+        
+        // Handle different types of postMessage responses
+        if let messageData = data as? [String: Any] {
+            handleStructuredPostMessage(messageData, origin: origin, source: source, timestamp: timestamp)
+        } else if let messageString = data as? String {
+            handleStringPostMessage(messageString, origin: origin, source: source, timestamp: timestamp)
+        } else {
+            print("📨 Unknown postMessage data type: \(type(of: data))")
+        }
+    }
+    
+    private func handleStructuredPostMessage(_ data: [String: Any], origin: String, source: String, timestamp: TimeInterval) {
+        // Handle structured message data
+        if let name = data["name"] as? String {
+            print("📨 Structured message with name: \(name)")
+            
+            switch name {
+            case "openFrame":
+                print("📨 openFrame response received")
+                let event = ChatbotEvent(type: .chatbotAppReady, data: data)
+                eventHandler?(event)
+                
+            case "registerUserId":
+                print("📨 registerUserId response received")
+                if let responseData = data["data"] as? [String: Any] {
+                    print("📨 User registration response: \(responseData)")
+                }
+                let event = ChatbotEvent(type: .chatInitialized, data: data)
+                eventHandler?(event)
+                
+            case "chatResponse":
+                print("📨 Chat response received")
+                if let chatData = data["data"] as? [String: Any] {
+                    print("📨 Chat data: \(chatData)")
+                }
+                
+            case "error":
+                print("📨 Error response received")
+                if let errorData = data["data"] as? [String: Any] {
+                    print("📨 Error data: \(errorData)")
+                    let event = ChatbotEvent(type: .chatInitializationFailed, data: errorData)
+                    eventHandler?(event)
+                }
+                
+            default:
+                print("📨 Unknown structured message name: \(name)")
+                // Emit custom event for unknown messages
+                let event = ChatbotEvent(type: .chatbotLoaded, data: data)
+                eventHandler?(event)
+            }
+        } else {
+            print("📨 Structured message without name: \(data)")
+        }
+    }
+    
+    private func handleStringPostMessage(_ message: String, origin: String, source: String, timestamp: TimeInterval) {
+        print("📨 String message received: \(message)")
+        
+        // Try to parse as JSON
+        if let data = message.data(using: .utf8) {
+            do {
+                if let jsonData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    print("📨 Parsed JSON from string message: \(jsonData)")
+                    handleStructuredPostMessage(jsonData, origin: origin, source: source, timestamp: timestamp)
+                } else {
+                    print("📨 String message is not valid JSON")
+                    // Handle as plain text message
+                    let event = ChatbotEvent(type: .chatbotLoaded, data: ["message": message])
+                    eventHandler?(event)
+                }
+            } catch {
+                print("📨 Failed to parse string message as JSON: \(error)")
+                // Handle as plain text message
+                let event = ChatbotEvent(type: .chatbotLoaded, data: ["message": message])
+                eventHandler?(event)
+            }
+        }
+    }
+    
+    // MARK: - Operation Handling
+    private func handleOperation(_ operation: String, data: [String: Any]) {
+        switch operation {
+        case "chat.close":
+            print("🔧 Operation: chat.close - Closing chatbot")
+            dismiss(animated: true) { [weak self] in
+                guard let self = self else { return }
+                let event = ChatbotEvent(type: .chatbotClosed, data: data)
+                self.eventHandler?(event)
+            }
+            
+        case "chat.open":
+            print("🔧 Operation: chat.open - Opening chatbot")
+            let event = ChatbotEvent(type: .chatbotOpened, data: data)
+            eventHandler?(event)
+            
+        case "chat.refresh":
+            print("🔧 Operation: chat.refresh - Refreshing session")
+            let event = ChatbotEvent(type: .sessionRefreshed, data: data)
+            eventHandler?(event)
+            
+        case "chat.move":
+            print("🔧 Operation: chat.move - Moving chat")
+            let event = ChatbotEvent(type: .chatbotOpened, data: data)
+            eventHandler?(event)
+            
+        case "chat.ready":
+            print("🔧 Operation: chat.ready - Chat is ready")
+            let event = ChatbotEvent(type: .chatbotAppReady, data: data)
+            eventHandler?(event)
+            
+        case "chat.loaded":
+            print("🔧 Operation: chat.loaded - Chat loaded")
+            let event = ChatbotEvent(type: .chatbotLoaded, data: data)
+            eventHandler?(event)
+            
+        case "chat.error":
+            print("🔧 Operation: chat.error - Chat error occurred")
+            let event = ChatbotEvent(type: .chatInitializationFailed, data: data)
+            eventHandler?(event)
+            
+        case "user.register":
+            print("🔧 Operation: user.register - User registration")
+            if let userData = data["userData"] as? [String: Any] {
+                print("🔧 User data: \(userData)")
+            }
+            
+        case "message.send":
+            print("🔧 Operation: message.send - Message sent")
+            if let messageData = data["message"] as? [String: Any] {
+                print("🔧 Message data: \(messageData)")
+            }
+            
+        case "message.receive":
+            print("🔧 Operation: message.receive - Message received")
+            if let messageData = data["message"] as? [String: Any] {
+                print("🔧 Message data: \(messageData)")
+            }
+            
+        default:
+            print("🔧 Unhandled operation: \(operation)")
+            ChatbotUtils.logInfo("Unhandled operation: \(operation) with data: \(data)")
+        }
+    }
 }
+
 
