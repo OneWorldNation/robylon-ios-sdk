@@ -35,6 +35,25 @@ public class WebViewController: UIViewController {
         // Add user content controller for JavaScript communication
         let userContentController = WKUserContentController()
         userContentController.add(self, name: "chatbotHandler")
+        
+        // Inject JavaScript to override console.log
+        let logInjectionScript = """
+        (function() {
+            var oldLog = console.log;
+            console.log = function(message) {
+                window.webkit.messageHandlers.jsLogger.postMessage("LOG: " + message);
+                oldLog.apply(console, arguments);
+            };
+            var oldError = console.error;
+            console.error = function(message) {
+                window.webkit.messageHandlers.jsLogger.postMessage("ERROR: " + message);
+                oldError.apply(console, arguments);
+            };
+        })();
+        """
+        let script = WKUserScript(source: logInjectionScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        userContentController.addUserScript(script)
+        userContentController.add(self, name: "jsLogger")
         configuration.userContentController = userContentController
         
         // Create web view
@@ -131,36 +150,77 @@ public class WebViewController: UIViewController {
     }
     
     // MARK: - JavaScript Communication
-    private func injectJavaScript() {
-        let script = """
-        // Listen for messages from the web content
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type) {
-                window.webkit.messageHandlers.chatbotHandler.postMessage({
-                    type: event.data.type,
-                    data: event.data.data || {}
-                });
-            }
-        });
+    private func injectPostMessageEvents() {
+        let systemInfo = getSystemInfo()
+        let userId = UUID().uuidString
+        let userToken = self.userToken?.isEmpty == false ? self.userToken! : nil
         
-        // Expose chatbot events to web content
-        window.chatbotEvents = {
-            emit: function(type, data) {
-                window.webkit.messageHandlers.chatbotHandler.postMessage({
-                    type: type,
-                    data: data || {}
-                });
+        let script = """
+        window.dispatchEvent(new MessageEvent('message', { data: { name: 'openFrame', domain: 'app-domain.com' } }))
+        
+        window.dispatchEvent(new MessageEvent('message', {
+            data: {
+                name: "registerUserId",
+                action: "registerUserId",
+                data: {
+                    userId: "\(userId)",
+                    token: undefined,
+                    userProfile: {
+                        name: "\(userProfile?.name ?? "")",
+                        email: "\(userProfile?.email ?? "")",
+                        platform: "\(systemInfo.platform)",
+                        os: "\(systemInfo.os)",
+                        browser: "\(systemInfo.browser)",
+                        sdk_version: "\(systemInfo.sdk_version)",
+                        device: "\(systemInfo.device)",
+                        screen_size: "\(systemInfo.screen_size)"
+                    }
+                }
             }
-        };
+        }))
+        
+        //console.log("✅ postMessage events scheduled");
         """
         
         webView.evaluateJavaScript(script) { result, error in
             if let error = error {
-                ChatbotUtils.logError("Failed to inject JavaScript: \(error.localizedDescription)")
+                ChatbotUtils.logError("Failed to inject postMessage events: \(error.localizedDescription)")
             } else {
-                ChatbotUtils.logSuccess("JavaScript injected successfully")
+                ChatbotUtils.logSuccess("postMessage events injected successfully")
             }
         }
+    }
+    
+    private func getSystemInfo() -> (platform: String, os: String, browser: String, sdk_version: String, device: String, screen_size: String) {
+        let platform = "iOS"
+        let os = UIDevice.current.systemName + " " + UIDevice.current.systemVersion
+        let browser = "WebView"
+        let sdk_version = "1.0.0" // You can update this to your actual SDK version
+        
+        // Get device type
+        let device: String
+        switch UIDevice.current.userInterfaceIdiom {
+        case .phone:
+            device = "iPhone"
+        case .pad:
+            device = "iPad"
+        case .tv:
+            device = "Apple TV"
+        case .carPlay:
+            device = "CarPlay"
+        case .mac:
+            device = "Mac"
+        case .vision:
+            device = "Vision"
+        @unknown default:
+            device = "Unknown"
+        }
+        
+        // Get screen size
+        let screen = UIScreen.main.bounds
+        let screen_size = "\(Int(screen.width))x\(Int(screen.height))"
+        
+        return (platform, os, browser, sdk_version, device, screen_size)
     }
 }
 
@@ -169,8 +229,10 @@ extension WebViewController: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         ChatbotUtils.logSuccess("Chatbot web page loaded successfully")
         
-        // Inject JavaScript after page loads
-        injectJavaScript()
+        // Wait a bit for the page to fully load, then inject postMessage events
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.injectPostMessageEvents()
+        }
     }
     
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -196,6 +258,30 @@ extension WebViewController: WKUIDelegate {
 // MARK: - WKScriptMessageHandler
 extension WebViewController: WKScriptMessageHandler {
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
+        print("Received message from JavaScript: \(message.name) - \(message.body)")
+        
+        if message.name == "nativeLogger", let body = message.body as? String {
+            if let data = body.data(using: .utf8) {
+//                do {
+//                    if let jsonDict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+//                        print("✅ Parsed Dictionary: \(jsonDict)")
+//                        if jsonDict["name"] as? String == "openFrame" {
+//                            print("🎯 openFrame message received")
+//                        } else if jsonDict["name"] as? String == "registerUserId" {
+//                            print("🎯 registerUserId message received")
+//                        }
+//                    }
+//                } catch {
+//                    print("❌ JSON parsing failed: \(error)")
+//                }
+            }
+        }
+        
+        if message.name == "jsLogger", let body = message.body as? String {
+            print("🪵 JavaScript Log: \(body)")
+        }
+        
         guard message.name == "chatbotHandler",
               let body = message.body as? [String: Any],
               let type = body["type"] as? String else {
