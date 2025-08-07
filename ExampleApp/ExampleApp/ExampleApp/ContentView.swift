@@ -44,7 +44,7 @@ struct ContentView: View {
                 email: "test@example.com"
             ),
             eventHandler: { event in
-                print("[SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
+                print("📲 [SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
             },
             parentView: parentView
         )

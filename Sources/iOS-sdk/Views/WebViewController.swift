@@ -74,9 +74,6 @@ public class WebViewController: UIViewController {
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        // Add close button
-//        addCloseButton()
     }
     
     private func loadChatbotURL() {
@@ -113,26 +110,7 @@ public class WebViewController: UIViewController {
         webView.load(request)
     }
     
-    private func addCloseButton() {
-        let closeButton = UIButton(type: .system)
-        closeButton.setTitle("✕", for: .normal)
-        closeButton.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        closeButton.setTitleColor(.white, for: .normal)
-        closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.7)
-        closeButton.layer.cornerRadius = 20
-        closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
-        
-        view.addSubview(closeButton)
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            closeButton.widthAnchor.constraint(equalToConstant: 40),
-            closeButton.heightAnchor.constraint(equalToConstant: 40)
-        ])
-    }
-    
-    @objc private func closeButtonTapped() {
+    private func closeButtonTapped(data: [String: Any]? = nil) {
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             
@@ -151,8 +129,6 @@ public class WebViewController: UIViewController {
         let script = """
         // Add window.postMessage listener to capture responses
         window.addEventListener('message', function(event) {
-            console.log("📨 window.postMessage received:", event.data);
-            
             // Forward the message to native app
             if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.chatbotHandler) {
                 window.webkit.messageHandlers.chatbotHandler.postMessage({
@@ -188,15 +164,11 @@ public class WebViewController: UIViewController {
                 }
             }
         }))
-        
-        console.log("✅ Android.handlePayload, chatOperations, and postMessage listener setup complete");
         """
         
         webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 ChatbotUtils.logError("Failed to inject postMessage events: \(error.localizedDescription)")
-            } else {
-                ChatbotUtils.logSuccess("postMessage events and Android.handlePayload injected successfully")
             }
         }
     }
@@ -269,7 +241,7 @@ extension WebViewController: WKUIDelegate {
 extension WebViewController: WKScriptMessageHandler {
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
-        print("Received message from JavaScript: \(message.name) - \(message.body)")
+        ChatbotUtils.logInfo("Received message from JavaScript: \(message.name) - \(message.body)")
         
         if message.name == "jsLogger", let body = message.body as? String {
             print("🪵 JavaScript Log: \(body)")
@@ -280,8 +252,7 @@ extension WebViewController: WKScriptMessageHandler {
            let body = message.body as? [String: Any],
            let type = body["type"] as? String,
            type == "postMessageResponse" {
-            
-            print("📨 Processing postMessage response")
+        
             handlePostMessageResponse(body)
             return
         }
@@ -304,10 +275,9 @@ extension WebViewController: WKScriptMessageHandler {
     private func handleStructuredPostMessage(_ data: [String: Any]) {
         // Handle structured message data
         if let type = data["type"] as? String {
-            print("📨 Structured message with type: \(type)")
             switch type {
             case "CHATBOT_CLOSED":
-                closeButtonTapped()
+                closeButtonTapped(data: data)
                 
             case "CHAT_INITIALIZED":
                 let event = ChatbotEvent(type: .chatInitialized, data: data)
@@ -326,10 +296,10 @@ extension WebViewController: WKScriptMessageHandler {
                 eventHandler?(event)
                 
             default:
-                print("📨 Unknown structured message type: \(type)")
+                ChatbotUtils.logWarning("📨 Unknown structured message type: \(type)")
             }
         } else {
-            print("📨 Structured message without name: \(data)")
+            ChatbotUtils.logInfo("📨 Structured message not to be processed")
         }
     }
 }

@@ -264,9 +264,6 @@ public class Chatbot {
     private func handleButtonCallback() {
         guard let config = configuration else { return }
         
-        // Handle any button callbacks here
-        print("Button callback received")
-        
         // Emit button clicked event
         let buttonEvent = ChatbotEvent(type: .chatbotButtonClicked)
         config.eventHandler?(buttonEvent)
