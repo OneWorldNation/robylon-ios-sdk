@@ -109,15 +109,6 @@ public class WebViewController: UIViewController {
         
         // Load the request
         webView.load(request)
-        
-        // Emit chatbot opened
-        let event = ChatbotEvent(type: .chatbotOpened, data: [
-            "url": urlString,
-            "apiKey": apiKey,
-            "userId": userId ?? "",
-            "hasUserToken": userToken != nil
-        ])
-        eventHandler?(event)
     }
     
     private func addCloseButton() {

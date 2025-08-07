@@ -130,10 +130,6 @@ public class Chatbot {
         // Create and add custom button to parent view
         createAndAddCustomButton(to: config.parentView)
         
-        // Emit initialization success event
-        let event = ChatbotEvent(type: .chatbotButtonLoaded, data: eventData)
-        config.eventHandler?(event)
-        
         ChatbotUtils.logSuccess("Chatbot button added successfully with API key: \(config.apiKey)")
     }
     
