@@ -11,18 +11,46 @@ import WebKit
 public class WebViewController: UIViewController {
     
     // MARK: - Properties
-    private var webView: WKWebView!
-    public var apiKey: String?
-    public var userId: String?
+    public var apiKey: String = ""
+    public var userId: String = UUID().uuidString
     public var userToken: String?
     public var userProfile: UserProfile?
     public var eventHandler: ChatbotEventHandler?
+    public var dismissCompletion: (() -> Void)?
+    
+    private var webView: WKWebView!
     
     // MARK: - Lifecycle
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupWebView()
         loadChatbotURL()
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        // If this is a dismissal (not a push), clean up
+        if isBeingDismissed {
+            cleanupWebView()
+        }
+    }
+    
+    public override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        // If this is a dismissal, clear references
+        if isBeingDismissed {
+            // Call dismiss completion and clear it
+            dismissCompletion?()
+            dismissCompletion = nil
+            
+            // Clear references to prevent retain cycles
+            eventHandler = nil
+            webView = nil
+            
+            ChatbotUtils.logInfo("WebViewController dismissed and cleaned up")
+        }
     }
     
     // MARK: - Setup
@@ -77,11 +105,6 @@ public class WebViewController: UIViewController {
     }
     
     private func loadChatbotURL() {
-        guard let apiKey = apiKey else {
-            ChatbotUtils.logError("API key is required to load chatbot URL")
-            return
-        }
-        
         // Construct URL with chatbot ID
         let baseURL = "https://staging.d2s3wsqyyond1h.amplifyapp.com/chatbot-plugin"
         let urlString = "\(baseURL)?id=\(apiKey)"
@@ -98,9 +121,7 @@ public class WebViewController: UIViewController {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Add user data if available
-        if let userId = userId, !userId.isEmpty {
-            request.setValue(userId, forHTTPHeaderField: "X-User-ID")
-        }
+        request.setValue(userId, forHTTPHeaderField: "X-User-ID")
         
         if let userToken = userToken, !userToken.isEmpty {
             request.setValue(userToken, forHTTPHeaderField: "X-User-Token")
@@ -110,14 +131,44 @@ public class WebViewController: UIViewController {
         webView.load(request)
     }
     
-    private func closeButtonTapped(data: [String: Any]? = nil) {
+    private func closeButtonTapped() {
+        // Remove all message handlers to prevent memory leaks
+        cleanupWebView()
+        
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             
-            // Emit chatbot closed event
-            let event = ChatbotEvent(type: .chatbotClosed)
-            self.eventHandler?(event)
+            // Call dismiss completion and clear it
+            self.dismissCompletion?()
+            self.dismissCompletion = nil
+            
+            // Clear references to prevent retain cycles
+            self.eventHandler = nil
+            self.webView = nil
         }
+    }
+    
+    // MARK: - Cleanup Methods
+    private func cleanupWebView() {
+        guard let webView = webView else { return }
+        
+        // Remove all message handlers
+        webView.configuration.userContentController.removeAllScriptMessageHandlers()
+        
+        // Stop loading and clear navigation delegate
+        webView.stopLoading()
+        webView.navigationDelegate = nil
+        webView.uiDelegate = nil
+        
+        // Clear the web view content
+        webView.loadHTMLString("", baseURL: nil)
+        
+        ChatbotUtils.logInfo("WebView cleanup completed")
+    }
+    
+    // MARK: - Deinit
+    deinit {
+        ChatbotUtils.logInfo("WebViewController deallocated")
     }
     
     // MARK: - JavaScript Communication
@@ -277,7 +328,10 @@ extension WebViewController: WKScriptMessageHandler {
         if let type = data["type"] as? String {
             switch type {
             case "CHATBOT_CLOSED":
-                closeButtonTapped(data: data)
+                // Emit chatbot closed event
+                let event = ChatbotEvent(type: .chatbotClosed, data: data)
+                self.eventHandler?(event)
+                closeButtonTapped()
                 
             case "CHAT_INITIALIZED":
                 let event = ChatbotEvent(type: .chatInitialized, data: data)

@@ -5,7 +5,7 @@ import UIKit
 public struct ChatbotConfiguration {
     public let apiKey: String
     public let orgId: String?
-    public let userId: String?
+    public let userId: String
     public let userToken: String?
     public let userProfile: UserProfile?
     public let eventHandler: ChatbotEventHandler?
@@ -22,7 +22,7 @@ public struct ChatbotConfiguration {
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
-        self.userId = userId
+        self.userId = userId ?? UUID().uuidString // Generate a UUID if userId is nil
         self.userToken = userToken
         self.userProfile = userProfile
         self.eventHandler = eventHandler

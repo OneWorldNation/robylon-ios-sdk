@@ -232,11 +232,20 @@ public class Chatbot {
                 let openedEvent = ChatbotEvent(type: .chatbotOpened)
                 config.eventHandler?(openedEvent)
             }
+            
+            // Set dismiss completion to clear reference
+            webVC.dismissCompletion = { [weak self] in
+                self?.webViewController = nil
+                ChatbotUtils.logInfo("WebViewController reference cleared from Chatbot")
+            }
         }
     }
     
     public func closeChatbot() {
         guard let webVC = webViewController else { return }
+        
+        // Clear the reference immediately to prevent retain cycles
+        self.webViewController = nil
         
         webVC.dismiss(animated: true) { [weak self] in
             guard let self = self, let config = self.configuration else { return }
@@ -245,7 +254,7 @@ public class Chatbot {
             let event = ChatbotEvent(type: .chatbotClosed)
             config.eventHandler?(event)
             
-            self.webViewController = nil
+            ChatbotUtils.logInfo("Chatbot closed and cleaned up")
         }
     }
     
