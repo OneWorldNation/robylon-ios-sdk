@@ -55,21 +55,21 @@ final class CustomButton: UIButton {
         self.frame = CGRect(x: 0, y: 0, width: 50, height: 50) // Default frame
         
         // Set title color (white for dark backgrounds, black for light backgrounds)
-//        setTitleColor(.black, for: .normal)
+        setTitleColor(.black, for: .normal)
         
         // Set background color
-//        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
-//            backgroundColor = UIColor(hex: backgroundColorString) ?? .systemBlue
-//        } else {
-//            backgroundColor = .systemBlue
-//        }
+        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
+            backgroundColor = UIColor(hex: backgroundColorString) ?? .systemBlue
+        } else {
+            backgroundColor = .systemBlue
+        }
         
         // Set corner radius and shadow
-//        layer.cornerRadius = 25
-//        layer.shadowColor = UIColor.black.cgColor
-//        layer.shadowOffset = CGSize(width: 0, height: 2)
-//        layer.shadowOpacity = 0.3
-//        layer.shadowRadius = 4
+        layer.cornerRadius = 25
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowOpacity = 0.3
+        layer.shadowRadius = 4
         
         // Configure button based on launch type
 //        configureButtonForLaunchType(config.launchType, config: config)
@@ -78,11 +78,11 @@ final class CustomButton: UIButton {
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
         // Set size based on content
-//        translatesAutoresizingMaskIntoConstraints = false
-//        heightAnchor.constraint(equalToConstant: 50).isActive = true
+        translatesAutoresizingMaskIntoConstraints = false
+        heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         // Adjust width based on content and launch type
-//        adjustWidthForLaunchType(config.launchType, config: config)
+        adjustWidthForLaunchType(config.launchType, config: config)
     }
     
     private func configureButtonForLaunchType(_ launchType: String?, config: CustomButtonConfig) {

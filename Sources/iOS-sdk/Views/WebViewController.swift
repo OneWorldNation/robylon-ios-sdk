@@ -328,24 +328,69 @@ extension WebViewController: WKScriptMessageHandler {
         if let type = data["type"] as? String {
             switch type {
             case "CHATBOT_CLOSED":
+                // Record analytics event
+                if let config = Chatbot.shared.getConfiguration() {
+                    ChatbotAnalyticsService.shared.recordEvent(
+                        eventType: .chatbotClosed,
+                        config: config,
+                        additionalData: data
+                    )
+                }
+                
                 // Emit chatbot closed event
                 let event = ChatbotEvent(type: .chatbotClosed, data: data)
                 self.eventHandler?(event)
                 closeButtonTapped()
                 
             case "CHAT_INITIALIZED":
+                // Record analytics event
+                if let config = Chatbot.shared.getConfiguration() {
+                    ChatbotAnalyticsService.shared.recordEvent(
+                        eventType: .chatInitialized,
+                        config: config,
+                        additionalData: data
+                    )
+                }
+                
                 let event = ChatbotEvent(type: .chatInitialized, data: data)
                 eventHandler?(event)
                 
             case "CHATBOT_LOADED":
+                // Record analytics event
+                if let config = Chatbot.shared.getConfiguration() {
+                    ChatbotAnalyticsService.shared.recordEvent(
+                        eventType: .chatbotLoaded,
+                        config: config,
+                        additionalData: data
+                    )
+                }
+                
                 let event = ChatbotEvent(type: .chatbotLoaded, data: data)
                 eventHandler?(event)
                 
             case "CHAT_INITIALIZATION_FAILED":
+                // Record analytics event
+                if let config = Chatbot.shared.getConfiguration() {
+                    ChatbotAnalyticsService.shared.recordEvent(
+                        eventType: .chatInitializationFailed,
+                        config: config,
+                        additionalData: data
+                    )
+                }
+                
                 let event = ChatbotEvent(type: .chatInitializationFailed, data: data)
                 eventHandler?(event)
-            
+                
             case "SESSION_REFRESHED":
+                // Record analytics event
+                if let config = Chatbot.shared.getConfiguration() {
+                    ChatbotAnalyticsService.shared.recordEvent(
+                        eventType: .sessionRefreshed,
+                        config: config,
+                        additionalData: data
+                    )
+                }
+                
                 let event = ChatbotEvent(type: .sessionRefreshed, data: data)
                 eventHandler?(event)
                 

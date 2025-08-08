@@ -126,7 +126,6 @@ public class Chatbot {
         
         eventData["brandConfig"] = brandConfigData
         
-        
         // Create and add custom button to parent view
         createAndAddCustomButton(to: config.parentView)
         
@@ -170,6 +169,12 @@ public class Chatbot {
         // Emit button loaded event
         if let config = configuration {
             let event = ChatbotEvent(type: .chatbotButtonLoaded)
+            // Record analytics event
+            ChatbotAnalyticsService.shared.recordEvent(
+                eventType: .chatbotButtonLoaded,
+                config: config,
+                additionalData: nil
+            )
             config.eventHandler?(event)
         }
         
@@ -230,6 +235,11 @@ public class Chatbot {
             topVC.present(webVC, animated: true) {
                 // Emit chatbot opened event
                 let openedEvent = ChatbotEvent(type: .chatbotOpened)
+                // Record analytics event
+                ChatbotAnalyticsService.shared.recordEvent(
+                    eventType: .chatbotOpened,
+                    config: config
+                )
                 config.eventHandler?(openedEvent)
             }
             
@@ -242,7 +252,7 @@ public class Chatbot {
     }
     
     public func closeChatbot() {
-        guard let webVC = webViewController else { return }
+        guard let webVC = webViewController, let config = configuration else { return }
         
         // Clear the reference immediately to prevent retain cycles
         self.webViewController = nil
@@ -272,6 +282,15 @@ public class Chatbot {
     // MARK: - Private Methods
     private func handleButtonCallback() {
         guard let config = configuration else { return }
+        
+        // Handle any button callbacks here
+        print("Button callback received")
+        
+        // Record analytics event
+        ChatbotAnalyticsService.shared.recordEvent(
+            eventType: .chatbotButtonClicked,
+            config: config
+        )
         
         // Emit button clicked event
         let buttonEvent = ChatbotEvent(type: .chatbotButtonClicked)

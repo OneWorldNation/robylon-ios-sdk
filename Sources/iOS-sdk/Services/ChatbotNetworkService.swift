@@ -235,3 +235,197 @@ public enum ChatbotNetworkError: Error, LocalizedError {
         }
     }
 }
+
+// MARK: - Analytics API Models
+public struct AnalyticsAPIRequest: Codable {
+    public let org_id: String
+    public let event_data: EventData
+    public let metadata: Metadata
+    public let event_type: String
+    public let user_id: String
+    
+    public struct EventData: Codable {
+        public let trigger_time: Int64
+        public let channel: String
+        public let org_id: String
+        public let client_user_id: String
+        public let event_type: String
+        public let user_profile: UserProfileData
+    }
+    
+    public struct UserProfileData: Codable {
+        public let email: String?
+        public let name: String?
+    }
+    
+    public struct Metadata: Codable {
+        public let timestamp: Int64
+        public let platform: String
+        public let os: String
+        public let browser: String
+        public let sdk_version: String
+        public let device: String
+        public let screen_size: ScreenSize
+    }
+    
+    public struct ScreenSize: Codable {
+        public let width: Int
+        public let height: Int
+    }
+}
+
+// MARK: - Analytics Service
+@MainActor
+public class ChatbotAnalyticsService {
+    
+    // MARK: - Singleton
+    public static let shared = ChatbotAnalyticsService()
+    
+    // MARK: - Properties
+    private let baseURL = "https://stage-api.robylon.ai"
+    private let session = URLSession.shared
+    
+    // MARK: - Private Initializer
+    private init() {}
+    
+    // MARK: - Public Methods
+    public func recordEvent(
+        eventType: ChatbotEventType,
+        config: ChatbotConfiguration,
+        additionalData: [String: Any]? = nil
+    ) {
+        let request = buildAnalyticsRequest(eventType: eventType, config: config, additionalData: additionalData)
+        
+        guard let url = URL(string: "\(baseURL)/users/sdk/record-logs/") else {
+            ChatbotUtils.logError("Invalid analytics URL")
+            return
+        }
+        
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.setValue("*/*", forHTTPHeaderField: "Accept")
+        urlRequest.setValue("en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7", forHTTPHeaderField: "Accept-Language")
+        urlRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        urlRequest.setValue("https://app-stage.robylon.ai", forHTTPHeaderField: "Origin")
+        urlRequest.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        urlRequest.setValue("u=1, i", forHTTPHeaderField: "Priority")
+        urlRequest.setValue("https://app-stage.robylon.ai/", forHTTPHeaderField: "Referer")
+        urlRequest.setValue("\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"", forHTTPHeaderField: "Sec-Ch-Ua")
+        urlRequest.setValue("?0", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
+        urlRequest.setValue("\"macOS\"", forHTTPHeaderField: "Sec-Ch-Ua-Platform")
+        urlRequest.setValue("empty", forHTTPHeaderField: "Sec-Fetch-Dest")
+        urlRequest.setValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
+        urlRequest.setValue("same-site", forHTTPHeaderField: "Sec-Fetch-Site")
+        urlRequest.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(request)
+            urlRequest.httpBody = jsonData
+            
+            ChatbotUtils.logInfo("Recording analytics event: \(eventType.rawValue)")
+            
+            let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
+                DispatchQueue.main.async {
+                    self?.handleAnalyticsResponse(data: data, response: response, error: error, eventType: eventType)
+                }
+            }
+            task.resume()
+            
+        } catch {
+            ChatbotUtils.logError("Failed to encode analytics request: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Private Methods
+    private func buildAnalyticsRequest(
+        eventType: ChatbotEventType,
+        config: ChatbotConfiguration,
+        additionalData: [String: Any]?
+    ) -> AnalyticsAPIRequest {
+        let currentTime = Int64(Date().timeIntervalSince1970 * 1000)
+        let screenSize = getScreenSize()
+        
+        let eventData = AnalyticsAPIRequest.EventData(
+            trigger_time: currentTime,
+            channel: "CHATBOT",
+            org_id: config.apiKey,
+            client_user_id: config.userId ?? "",
+            event_type: eventType.rawValue,
+            user_profile: AnalyticsAPIRequest.UserProfileData(
+                email: config.userProfile?.email,
+                name: config.userProfile?.name
+            )
+        )
+        
+        let metadata = AnalyticsAPIRequest.Metadata(
+            timestamp: currentTime,
+            platform: "ios",
+            os: getOSInfo(),
+            browser: "WebView",
+            sdk_version: "1.0.0",
+            device: getDeviceType(),
+            screen_size: AnalyticsAPIRequest.ScreenSize(
+                width: screenSize.width,
+                height: screenSize.height
+            )
+        )
+        
+        return AnalyticsAPIRequest(
+            org_id: config.apiKey,
+            event_data: eventData,
+            metadata: metadata,
+            event_type: "INFO",
+            user_id: config.userId ?? ""
+        )
+    }
+    
+    private func handleAnalyticsResponse(
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
+        eventType: ChatbotEventType
+    ) {
+        if let error = error {
+            ChatbotUtils.logError("Analytics API error: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            ChatbotUtils.logError("Invalid analytics HTTP response")
+            return
+        }
+        
+        if httpResponse.statusCode == 200 {
+            ChatbotUtils.logSuccess("Analytics event recorded successfully: \(eventType.rawValue)")
+        } else {
+            ChatbotUtils.logError("Analytics API error: HTTP \(httpResponse.statusCode)")
+        }
+    }
+    
+    private func getScreenSize() -> (width: Int, height: Int) {
+        let screen = UIScreen.main
+        let bounds = screen.bounds
+        let scale = screen.scale
+        return (
+            width: Int(bounds.width * scale),
+            height: Int(bounds.height * scale)
+        )
+    }
+    
+    private func getOSInfo() -> String {
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        return "iOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
+    }
+    
+    private func getDeviceType() -> String {
+        let device = UIDevice.current
+        if device.userInterfaceIdiom == .pad {
+            return "tablet"
+        } else if device.userInterfaceIdiom == .phone {
+            return "mobile"
+        } else {
+            return "desktop"
+        }
+    }
+}
