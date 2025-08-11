@@ -13,6 +13,7 @@ final class CustomButton: UIButton {
     // MARK: - Properties
     private var callback: (() -> Void)?
     private var config: CustomButtonConfig?
+    private let rightImageView = UIImageView()
     
     // MARK: - Initializers
     convenience init(callback: @escaping () -> Void) {
@@ -151,11 +152,12 @@ final class CustomButton: UIButton {
         
         // Load and configure image
         if let imageURLString = config.imageURL, !imageURLString.isEmpty {
-            loadCircularImage(from: imageURLString) {
+            loadCircularImage(from: imageURLString) { [weak self] image in
+                self?.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
                 // Ensure image view is circular
-                self.imageView?.contentMode = .scaleAspectFill
-                self.imageView?.clipsToBounds = true
-                self.imageView?.layer.cornerRadius = 25
+                self?.imageView?.contentMode = .scaleAspectFill
+                self?.imageView?.clipsToBounds = true
+                self?.imageView?.layer.cornerRadius = 25
             }
         } else {
             // Set a default image if no URL provided
@@ -187,39 +189,40 @@ final class CustomButton: UIButton {
         
         // Set text color to white
         setTitleColor(ChatbotUtils.getBestFontColor(for: backgroundColor!), for: .normal)
+        layer.cornerRadius = 25
+        clipsToBounds = false
+        applyShadow()
+        
+        heightAnchor.constraint(equalToConstant: 50).isActive = true
+        // Give room for text + image
+        contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 70)
+        // Image view setup
+        rightImageView.layer.cornerRadius = 25
+        rightImageView.layer.masksToBounds = true
+        rightImageView.layer.borderWidth = 2
+        rightImageView.layer.borderColor = UIColor.white.cgColor
+        rightImageView.contentMode = .scaleAspectFill
+        rightImageView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(rightImageView)
+        
+        NSLayoutConstraint.activate([
+            rightImageView.widthAnchor.constraint(equalToConstant: 50),
+            rightImageView.heightAnchor.constraint(equalToConstant: 50),
+            rightImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            rightImageView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
         
         // Load and configure image
         if let imageURLString = config.imageURL, !imageURLString.isEmpty {
-            loadCircularImage(from: imageURLString) {
-                // Ensure image view is circular
-                self.imageView?.contentMode = .scaleAspectFill
-                self.imageView?.clipsToBounds = true
-                self.imageView?.layer.cornerRadius = 25
-                self.imageView?.layer.borderWidth = 2
-                self.imageView?.layer.borderColor = UIColor.white.cgColor
+            loadCircularImage(from: imageURLString) { [weak self] image in
+                self?.rightImageView.image = image.withRenderingMode(.alwaysOriginal)
             }
         } else {
             // Set a default image if no URL provided
             setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
-        }
-        
-        // Set content insets for textual-image button
-        contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 8)
-        
-        // Configure image position (image on the right)
-        semanticContentAttribute = .forceRightToLeft
-        imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
-        titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)
-        
-        // Apply corner radius and shadow after constraints are set
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // Set corner radius to half of the button height for perfect pill shape
-            let buttonHeight = self.frame.height > 0 ? self.frame.height : 50
-            self.layer.cornerRadius = buttonHeight / 2
-            
-            self.applyShadow()
+            imageView?.layer.cornerRadius = 25
+            imageView?.layer.borderWidth = 2
+            imageView?.layer.borderColor = UIColor.white.cgColor
         }
     }
     
@@ -255,18 +258,17 @@ final class CustomButton: UIButton {
             break
             
         case "TEXTUAL_IMAGE":
-            // Width based on text content plus image space
+            // Fixed height for TEXTUAL_IMAGE button
+            heightAnchor.constraint(equalToConstant: 50).isActive = true
+            
+            // Width based on text content plus image space for 50x50 image
             if let title = config.title, !title.isEmpty {
                 let titleWidth = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
-                let minWidth = max(titleWidth + 90, 150) // Add padding for text + image
-//                let maxWidth = min(minWidth, 300)  Cap maximum width to prevent overflow
-                widthAnchor.constraint(equalToConstant: minWidth).isActive = true
-                let titleHeight = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
-                let minHeight = max(titleHeight + 20, 50) // Add padding
-                heightAnchor.constraint(equalToConstant: 60).isActive = true
+                let minWidth = max(titleWidth + 100, 160) // Reduce padding to ensure title visibility
+                let maxWidth = min(minWidth, 350) // Cap maximum width to prevent overflow
+                widthAnchor.constraint(equalToConstant: maxWidth).isActive = true
             } else {
-                widthAnchor.constraint(equalToConstant: 140).isActive = true
-                heightAnchor.constraint(equalToConstant: 50).isActive = true
+                widthAnchor.constraint(equalToConstant: 160).isActive = true
             }
             
         default:
@@ -275,7 +277,7 @@ final class CustomButton: UIButton {
         }
     }
     
-    private func loadCircularImage(from urlString: String, completion: (() -> Void)? = nil) {
+    private func loadCircularImage(from urlString: String, completion: ((UIImage) -> Void)? = nil) {
         guard let url = URL(string: urlString) else { return }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
@@ -284,9 +286,7 @@ final class CustomButton: UIButton {
                 return
             }
             DispatchQueue.main.async {
-                self.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
-                
-                completion?()
+                completion?(image)
             }
         }.resume()
     }
