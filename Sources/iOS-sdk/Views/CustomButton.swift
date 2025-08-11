@@ -55,14 +55,11 @@ final class CustomButton: UIButton {
         
         // Set corner radius and shadow
         layer.cornerRadius = 25
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.shadowOpacity = 0.3
-        layer.shadowRadius = 4
+        applyShadow()
         
         // Configure button based on launch type
-//        configureButtonForLaunchType(config.launchType, config: config)
-        configureButtonForLaunchType("TEXT", config: config)
+        configureButtonForLaunchType(config.launchType, config: config)
+//        configureButtonForLaunchType("IMAGE", config: config)
         
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
