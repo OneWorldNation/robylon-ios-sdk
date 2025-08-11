@@ -195,7 +195,7 @@ final class CustomButton: UIButton {
         
         heightAnchor.constraint(equalToConstant: 50).isActive = true
         // Give room for text + image
-        contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 70)
+        contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 60)
         // Image view setup
         rightImageView.layer.cornerRadius = 25
         rightImageView.layer.masksToBounds = true
@@ -208,7 +208,7 @@ final class CustomButton: UIButton {
         NSLayoutConstraint.activate([
             rightImageView.widthAnchor.constraint(equalToConstant: 50),
             rightImageView.heightAnchor.constraint(equalToConstant: 50),
-            rightImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            rightImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0),
             rightImageView.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
         
