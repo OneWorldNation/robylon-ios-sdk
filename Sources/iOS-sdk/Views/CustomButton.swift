@@ -73,6 +73,14 @@ final class CustomButton: UIButton {
         adjustSizeForLaunchType(config.launchType, config: config)
     }
     
+    private func applyShadow() {
+        // Add shadow
+        self.layer.shadowColor = UIColor.black.cgColor
+        self.layer.shadowOffset = CGSize(width: 0, height: 2)
+        self.layer.shadowOpacity = 0.3
+        self.layer.shadowRadius = 4
+    }
+    
     private func configureButtonForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
         guard let launchType = launchType?.uppercased() else {
             // Default to TEXT if no launch type specified
@@ -120,11 +128,17 @@ final class CustomButton: UIButton {
         // Set text color to white
         setTitleColor(ChatbotUtils.getBestFontColor(for: backgroundColor!), for: .normal)
         
-        // Set corner radius for pill-like shape
-        layer.cornerRadius = 25
-        
         // Set content insets for text-only button
         contentEdgeInsets = UIEdgeInsets(top: 12, left: 20, bottom: 12, right: 20)
+        
+        // Apply corner radius and shadow after constraints are set
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // Set corner radius to half of the button height for perfect pill shape
+            let buttonHeight = self.frame.height > 0 ? self.frame.height : 50
+            self.layer.cornerRadius = buttonHeight / 2
+            self.applyShadow()
+        }
     }
     
     private func configureImageOnlyButton(config: CustomButtonConfig) {
