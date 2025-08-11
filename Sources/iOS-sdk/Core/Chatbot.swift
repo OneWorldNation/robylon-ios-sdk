@@ -192,7 +192,7 @@ public class Chatbot {
         switch position {
         case "left":
             NSLayoutConstraint.activate([
-                button.leadingAnchor.constraint(equalTo: parentView.leadingAnchor, constant: sideSpacing - 50),
+                button.leadingAnchor.constraint(equalTo: parentView.leadingAnchor, constant: sideSpacing),
                 button.bottomAnchor.constraint(equalTo: parentView.safeAreaLayoutGuide.bottomAnchor, constant: -bottomSpacing)
             ])
         case "right":

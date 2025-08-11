@@ -65,9 +65,6 @@ final class CustomButton: UIButton {
         
         // Set size based on content
         translatesAutoresizingMaskIntoConstraints = false
-        
-        // Adjust height and width based on content and launch type
-        adjustSizeForLaunchType(config.launchType, config: config)
     }
     
     private func applyShadow() {
@@ -223,57 +220,6 @@ final class CustomButton: UIButton {
             imageView?.layer.cornerRadius = 25
             imageView?.layer.borderWidth = 2
             imageView?.layer.borderColor = UIColor.white.cgColor
-        }
-    }
-    
-    private func adjustSizeForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
-        guard let launchType = launchType?.uppercased() else {
-            // Default height for unknown types
-            heightAnchor.constraint(equalToConstant: 50).isActive = true
-            widthAnchor.constraint(equalToConstant: 120).isActive = true
-            return
-        }
-        
-        switch launchType {
-        case "TEXT":
-            // Height based on text content
-            if let title = config.title, !title.isEmpty {
-                let titleHeight = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).height
-                let minHeight = max(titleHeight + 20, 50) // Add padding
-                heightAnchor.constraint(equalToConstant: minHeight).isActive = true
-            } else {
-                heightAnchor.constraint(equalToConstant: 50).isActive = true
-            }
-            
-            // Width based on text content
-            if let title = config.title, !title.isEmpty {
-                let titleWidth = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
-                let minWidth = max(titleWidth + 40, 120) // Add padding
-                widthAnchor.constraint(equalToConstant: minWidth).isActive = true
-            } else {
-                widthAnchor.constraint(equalToConstant: 120).isActive = true
-            }
-            
-        case "IMAGE":
-            break
-            
-        case "TEXTUAL_IMAGE":
-            // Fixed height for TEXTUAL_IMAGE button
-            heightAnchor.constraint(equalToConstant: 50).isActive = true
-            
-            // Width based on text content plus image space for 50x50 image
-            if let title = config.title, !title.isEmpty {
-                let titleWidth = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
-                let minWidth = max(titleWidth + 100, 160) // Reduce padding to ensure title visibility
-                let maxWidth = min(minWidth, 350) // Cap maximum width to prevent overflow
-                widthAnchor.constraint(equalToConstant: maxWidth).isActive = true
-            } else {
-                widthAnchor.constraint(equalToConstant: 160).isActive = true
-            }
-            
-        default:
-            heightAnchor.constraint(equalToConstant: 50).isActive = true
-            widthAnchor.constraint(equalToConstant: 120).isActive = true
         }
     }
     
