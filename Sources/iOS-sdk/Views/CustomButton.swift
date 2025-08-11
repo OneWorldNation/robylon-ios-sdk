@@ -79,10 +79,10 @@ final class CustomButton: UIButton {
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
         // Set size based on content
-//        translatesAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         
         // Adjust height and width based on content and launch type
-//        adjustSizeForLaunchType(config.launchType, config: config)
+        adjustSizeForLaunchType(config.launchType, config: config)
     }
     
     private func configureButtonForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
@@ -130,18 +130,12 @@ final class CustomButton: UIButton {
     private func configureImageOnlyButton(config: CustomButtonConfig) {
         // For IMAGE type, make the button background transparent
         // The image itself will provide the visual appearance
-        backgroundColor = .lightGray
+        backgroundColor = .clear
         
         // Set frame size to 25x25 for IMAGE type
         translatesAutoresizingMaskIntoConstraints = false
         heightAnchor.constraint(equalToConstant: 50).isActive = true
         widthAnchor.constraint(equalToConstant: 50).isActive = true
-        
-        
-        self.layer.cornerRadius = 25 // Half of 50px height for circular button
-        self.clipsToBounds = true
-        
-        self.imageView?.contentMode = .scaleAspectFill
         
         tintColor = .clear
         
@@ -255,6 +249,11 @@ final class CustomButton: UIButton {
             }
             DispatchQueue.main.async {
                 self.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
+                
+                // Ensure image view is circular
+                self.imageView?.contentMode = .scaleAspectFill
+                self.imageView?.clipsToBounds = true
+                self.imageView?.layer.cornerRadius = 25
             }
         }.resume()
     }
