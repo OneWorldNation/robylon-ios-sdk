@@ -47,6 +47,7 @@ public struct ChatbotAPIResponse: Codable {
         public let enable_message_sound: Bool?
         public let enable_user_feedback: Bool?
         public let interface_properties: InterfaceProperties?
+        let chat_iframe_url: String?
     }
     
     public struct Banner: Codable {

@@ -214,19 +214,14 @@ public class Chatbot {
         }
     }
     
-    public func openChatbot() {
+    func openChatbot() {
         guard isInitialized, let config = configuration else {
             print("Chatbot must be initialized before opening")
             return
         }
         
         // Create and present WebViewController
-        let webVC = WebViewController()
-        webVC.apiKey = config.apiKey
-        webVC.userId = config.userId
-        webVC.userToken = config.userToken
-        webVC.userProfile = config.userProfile
-        webVC.eventHandler = config.eventHandler
+        let webVC = WebViewController(apiKey: config.apiKey, url: customBottomConfig?.chatBotUrl ?? "" , userId: config.userId, userToken: config.userToken, userProfile: config.userProfile, eventHandler: config.eventHandler)
         
         self.webViewController = webVC
         
@@ -251,7 +246,7 @@ public class Chatbot {
         }
     }
     
-    public func closeChatbot() {
+    func closeChatbot() {
         guard let webVC = webViewController, let config = configuration else { return }
         
         // Clear the reference immediately to prevent retain cycles
@@ -268,14 +263,14 @@ public class Chatbot {
         }
     }
     
-    public func refreshSession() {
+    func refreshSession() {
         guard isInitialized, let config = configuration else { return }
         
         let event = ChatbotEvent(type: .sessionRefreshed)
         config.eventHandler?(event)
     }
     
-    public func isChatbotOpen() -> Bool {
+    func isChatbotOpen() -> Bool {
         return webViewController != nil
     }
     
@@ -305,7 +300,7 @@ public class Chatbot {
         return configuration
     }
     
-    public func getCustomBottomConfig() -> CustomButtonConfig? {
+    func getCustomBottomConfig() -> CustomButtonConfig? {
         return customBottomConfig
     }
     

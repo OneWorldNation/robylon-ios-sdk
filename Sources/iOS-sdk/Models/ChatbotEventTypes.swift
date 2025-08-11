@@ -47,29 +47,32 @@ public struct UserProfile: Codable {
 public typealias ChatbotEventHandler = (ChatbotEvent) -> Void 
 
 // MARK: - Custom Bottom Configuration
-public struct CustomButtonConfig {
+struct CustomButtonConfig {
     public let launchType: String?
     public let imageURL: String?
     public let title: String?
     public let backgroundColor: String?
     public let interfaceProperties: ChatbotAPIResponse.InterfaceProperties?
+    public let chatBotUrl: String
     
-    public init(
+    init(
         launchType: String? = nil,
         imageURL: String? = nil,
         title: String? = nil,
         backgroundColor: String? = nil,
-        interfaceProperties: ChatbotAPIResponse.InterfaceProperties? = nil
+        interfaceProperties: ChatbotAPIResponse.InterfaceProperties? = nil,
+        chatbotUrl: String
     ) {
         self.launchType = launchType
         self.imageURL = imageURL
         self.title = title
         self.backgroundColor = backgroundColor
         self.interfaceProperties = interfaceProperties
+        self.chatBotUrl = chatbotUrl
     }
     
     // Factory method to create from API response
-    public static func from(apiResponse: ChatbotAPIResponse) -> CustomButtonConfig {
+    static func from(apiResponse: ChatbotAPIResponse) -> CustomButtonConfig {
         let brandConfig = apiResponse.user?.org_info?.brand_config
         
         return CustomButtonConfig(
@@ -77,7 +80,8 @@ public struct CustomButtonConfig {
             imageURL: brandConfig?.images?.launcher_image_url?.url,
             title: brandConfig?.launcher_properties?.text,
             backgroundColor: brandConfig?.colors?.brand_color,
-            interfaceProperties: brandConfig?.interface_properties
+            interfaceProperties: brandConfig?.interface_properties,
+            chatbotUrl: brandConfig?.chat_iframe_url ?? ""
         )
     }
 } 

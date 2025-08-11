@@ -8,26 +8,52 @@ import UIKit
 import WebKit
 
 @MainActor
-public class WebViewController: UIViewController {
+final class WebViewController: UIViewController {
     
     // MARK: - Properties
-    public var apiKey: String = ""
-    public var userId: String = UUID().uuidString
-    public var userToken: String?
-    public var userProfile: UserProfile?
-    public var eventHandler: ChatbotEventHandler?
-    public var dismissCompletion: (() -> Void)?
+    private let apiKey: String
+    private let url: String
+    private let userId: String
+    private let userToken: String?
+    var userProfile: UserProfile?
+    var eventHandler: ChatbotEventHandler?
+    var dismissCompletion: (() -> Void)?
     
     private var webView: WKWebView!
 
+    init(
+        apiKey: String,
+        url: String,
+        userId: String = UUID().uuidString,
+        userToken: String? = nil,
+        userProfile: UserProfile? = nil,
+        eventHandler: ChatbotEventHandler? = nil,
+        dismissCompletion: (() -> Void)? = nil
+    ) {
+        self.apiKey = apiKey
+        self.url = url
+        self.userId = userId
+        self.userToken = userToken
+        self.userProfile = userProfile
+        self.eventHandler = eventHandler
+        self.dismissCompletion = dismissCompletion
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
     // MARK: - Lifecycle
-    public override func viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
         setupWebView()
         loadChatbotURL()
     }
     
-    public override func viewWillDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
         // If this is a dismissal (not a push), clean up
@@ -36,7 +62,7 @@ public class WebViewController: UIViewController {
         }
     }
     
-    public override func viewDidDisappear(_ animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
         // If this is a dismissal, clear references
@@ -106,8 +132,7 @@ public class WebViewController: UIViewController {
 
     private func loadChatbotURL() {
         // Construct URL with chatbot ID
-        let baseURL = "https://staging.d2s3wsqyyond1h.amplifyapp.com/chatbot-plugin"
-        let urlString = "\(baseURL)?id=\(apiKey)"
+        let urlString = url
         
         guard let url = URL(string: urlString) else {
             ChatbotUtils.logError("Invalid chatbot URL: \(urlString)")
@@ -279,7 +304,7 @@ extension WebViewController: WKNavigationDelegate {
 
 // MARK: - WKUIDelegate
 extension WebViewController: WKUIDelegate {
-    public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+    internal func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
         // Handle new window requests by loading in the same web view
         if navigationAction.targetFrame == nil {
             webView.load(navigationAction.request)
@@ -290,7 +315,7 @@ extension WebViewController: WKUIDelegate {
 
 // MARK: - WKScriptMessageHandler
 extension WebViewController: WKScriptMessageHandler {
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    internal func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
         ChatbotUtils.logInfo("Received message from JavaScript: \(message.name) - \(message.body)")
         
