@@ -78,6 +78,32 @@ public struct ChatbotUtils {
         }
         return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     }
+    
+    static func getBestFontColor(for backgroundColor: UIColor, contrastThreshold: CGFloat = 0.5) -> UIColor {
+        let whiteShade = UIColor.white
+        let blackShade = UIColor(red: 14/255, green: 14/255, blue: 15/255, alpha: 1)
+
+        // Function to calculate luminance
+        func luminance(_ color: UIColor) -> CGFloat {
+            var r: CGFloat = 0
+            var g: CGFloat = 0
+            var b: CGFloat = 0
+            var a: CGFloat = 0
+            
+            color.getRed(&r, green: &g, blue: &b, alpha: &a)
+            
+            let adjust: (CGFloat) -> CGFloat = { v in
+                return v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
+            }
+            
+            return (adjust(r) * 0.2126) +
+                   (adjust(g) * 0.7152) +
+                   (adjust(b) * 0.0722)
+        }
+
+        let bgLuminance = luminance(backgroundColor)
+        return bgLuminance > contrastThreshold ? blackShade : whiteShade
+    }
 }
 
 // MARK: - Extensions

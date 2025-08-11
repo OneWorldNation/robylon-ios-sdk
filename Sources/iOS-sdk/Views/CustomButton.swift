@@ -53,18 +53,6 @@ final class CustomButton: UIButton {
             return
         }
         
-//        self.frame = CGRect(x: 0, y: 0, width: 50, height: 50) // Default frame
-        
-        // Set title color (white for dark backgrounds, black for light backgrounds)
-//        setTitleColor(.black, for: .normal)
-        
-        // Set background color
-//        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
-//            backgroundColor = UIColor(hex: backgroundColorString) ?? .systemBlue
-//        } else {
-//            backgroundColor = .systemBlue
-//        }
-        
         // Set corner radius and shadow
         layer.cornerRadius = 25
         layer.shadowColor = UIColor.black.cgColor
@@ -74,7 +62,7 @@ final class CustomButton: UIButton {
         
         // Configure button based on launch type
 //        configureButtonForLaunchType(config.launchType, config: config)
-        configureButtonForLaunchType("IMAGE", config: config)
+        configureButtonForLaunchType("TEXT", config: config)
         
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
@@ -122,6 +110,18 @@ final class CustomButton: UIButton {
         // Configure title label
         titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         titleLabel?.textAlignment = .center
+        
+        // Set background color to brownish-grey (matching screenshot 1)
+        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
+            backgroundColor = UIColor(hex: backgroundColorString) ?? UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0)
+        } else {
+            backgroundColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0) // Brownish-grey
+        }
+        // Set text color to white
+        setTitleColor(ChatbotUtils.getBestFontColor(for: backgroundColor!), for: .normal)
+        
+        // Set corner radius for pill-like shape
+        layer.cornerRadius = 25
         
         // Set content insets for text-only button
         contentEdgeInsets = UIEdgeInsets(top: 12, left: 20, bottom: 12, right: 20)
@@ -209,9 +209,6 @@ final class CustomButton: UIButton {
             }
             
         case "IMAGE":
-            // Fixed height and width for circular image button
-//            heightAnchor.constraint(equalToConstant: 25).isActive = true
-//            widthAnchor.constraint(equalToConstant: 25).isActive = true
             break
             
         case "TEXTUAL_IMAGE":

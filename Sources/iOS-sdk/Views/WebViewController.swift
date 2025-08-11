@@ -19,7 +19,7 @@ public class WebViewController: UIViewController {
     public var dismissCompletion: (() -> Void)?
     
     private var webView: WKWebView!
-    
+
     // MARK: - Lifecycle
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,7 +103,7 @@ public class WebViewController: UIViewController {
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
+
     private func loadChatbotURL() {
         // Construct URL with chatbot ID
         let baseURL = "https://staging.d2s3wsqyyond1h.amplifyapp.com/chatbot-plugin"
@@ -394,7 +394,7 @@ extension WebViewController: WKScriptMessageHandler {
                 let event = ChatbotEvent(type: .sessionRefreshed, data: data)
                 eventHandler?(event)
                 
-            default:
+                    default:
                 ChatbotUtils.logWarning("📨 Unknown structured message type: \(type)")
             }
         } else {
