@@ -52,37 +52,37 @@ final class CustomButton: UIButton {
             setupDefaultButton()
             return
         }
+        
         self.frame = CGRect(x: 0, y: 0, width: 50, height: 50) // Default frame
         
         // Set title color (white for dark backgrounds, black for light backgrounds)
-        setTitleColor(.black, for: .normal)
+//        setTitleColor(.black, for: .normal)
         
         // Set background color
-        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
-            backgroundColor = UIColor(hex: backgroundColorString) ?? .systemBlue
-        } else {
-            backgroundColor = .systemBlue
-        }
+//        if let backgroundColorString = config.backgroundColor, !backgroundColorString.isEmpty {
+//            backgroundColor = UIColor(hex: backgroundColorString) ?? .systemBlue
+//        } else {
+//            backgroundColor = .systemBlue
+//        }
         
         // Set corner radius and shadow
-        layer.cornerRadius = 25
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.shadowOpacity = 0.3
-        layer.shadowRadius = 4
+//        layer.cornerRadius = 25
+//        layer.shadowColor = UIColor.black.cgColor
+//        layer.shadowOffset = CGSize(width: 0, height: 2)
+//        layer.shadowOpacity = 0.3
+//        layer.shadowRadius = 4
         
         // Configure button based on launch type
 //        configureButtonForLaunchType(config.launchType, config: config)
-        configureButtonForLaunchType("text", config: config)
+        configureButtonForLaunchType("IMAGE", config: config)
         
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
         // Set size based on content
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: 50).isActive = true
         
-        // Adjust width based on content and launch type
-        adjustWidthForLaunchType(config.launchType, config: config)
+        // Adjust height and width based on content and launch type
+        adjustSizeForLaunchType(config.launchType, config: config)
     }
     
     private func configureButtonForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
@@ -129,15 +129,20 @@ final class CustomButton: UIButton {
     
     private func configureImageOnlyButton(config: CustomButtonConfig) {
         // Remove title
-//        setTitle(nil, for: .normal)
+        setTitle(nil, for: .normal)
         
         // For IMAGE type, make the button background transparent
         // The image itself will provide the visual appearance
-//        backgroundColor = .clear
+        backgroundColor = .clear
         
-        // Remove shadow for image-only button to make it look more natural
-//        layer.shadowColor = UIColor.clear.cgColor
-//        layer.shadowOpacity = 0
+        // Set frame size to 25x25 for IMAGE type
+        self.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
+        
+        // Maintain shadow for image-only button
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowOpacity = 0.3
+        layer.shadowRadius = 4
         
         self.clipsToBounds = true
         
@@ -146,12 +151,12 @@ final class CustomButton: UIButton {
             loadCircularImage(from: imageURLString)
         } else {
             // Set a default image if no URL provided
-//            setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
-//            configureCircularImageView()
+            setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
+            configureCircularImageView()
         }
         
         // Set content insets for image-only button
-//        contentEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        contentEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
     
     private func configureTextualImageButton(config: CustomButtonConfig) {
@@ -184,15 +189,25 @@ final class CustomButton: UIButton {
         titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)
     }
     
-    private func adjustWidthForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
+    private func adjustSizeForLaunchType(_ launchType: String?, config: CustomButtonConfig) {
         guard let launchType = launchType?.uppercased() else {
-            // Default width for unknown types
+            // Default height for unknown types
+            heightAnchor.constraint(equalToConstant: 50).isActive = true
             widthAnchor.constraint(equalToConstant: 120).isActive = true
             return
         }
         
         switch launchType {
         case "TEXT":
+            // Height based on text content
+            if let title = config.title, !title.isEmpty {
+                let titleHeight = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).height
+                let minHeight = max(titleHeight + 20, 50) // Add padding
+                heightAnchor.constraint(equalToConstant: minHeight).isActive = true
+            } else {
+                heightAnchor.constraint(equalToConstant: 50).isActive = true
+            }
+            
             // Width based on text content
             if let title = config.title, !title.isEmpty {
                 let titleWidth = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
@@ -203,10 +218,20 @@ final class CustomButton: UIButton {
             }
             
         case "IMAGE":
-            // Fixed width for circular image button
+            // Fixed height and width for circular image button
+            heightAnchor.constraint(equalToConstant: 25).isActive = true
             widthAnchor.constraint(equalToConstant: 25).isActive = true
             
         case "TEXTUAL_IMAGE":
+            // Height based on text content
+            if let title = config.title, !title.isEmpty {
+                let titleHeight = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).height
+                let minHeight = max(titleHeight + 20, 50) // Add padding
+                heightAnchor.constraint(equalToConstant: minHeight).isActive = true
+            } else {
+                heightAnchor.constraint(equalToConstant: 50).isActive = true
+            }
+            
             // Width based on text content plus image space
             if let title = config.title, !title.isEmpty {
                 let titleWidth = title.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16, weight: .semibold)]).width
@@ -217,6 +242,7 @@ final class CustomButton: UIButton {
             }
             
         default:
+            heightAnchor.constraint(equalToConstant: 50).isActive = true
             widthAnchor.constraint(equalToConstant: 120).isActive = true
         }
     }
@@ -235,28 +261,30 @@ final class CustomButton: UIButton {
     }
     
     private func configureCircularImageView() {
-        // Make the button itself circular
-        layer.cornerRadius = 25 // Half of 50px height for circular button
-        
         // Configure the image view
-        imageView?.contentMode = .scaleAspectFit
-        imageView?.layer.cornerRadius = 25 // Make image view circular to match button
+        imageView?.contentMode = .scaleAspectFill
         imageView?.clipsToBounds = true
         
-        // Remove border for cleaner look
-        imageView?.layer.borderWidth = 0
-        
-        // Set image size to fill the entire button
+        // Set image size constraints
         imageView?.translatesAutoresizingMaskIntoConstraints = false
         
         // For IMAGE type, make image fill the entire button
         if config?.launchType?.uppercased() == "IMAGE" {
+            // Make the button itself circular for IMAGE type
+            layer.cornerRadius = 12.5 // Half of 25px height for circular button
+            
+            // Make image view circular to match button
+            imageView?.layer.cornerRadius = 12.5
+            imageView?.layer.borderWidth = 0
+            
+            // Image fills entire button
             imageView?.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
             imageView?.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
             imageView?.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
             imageView?.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         } else {
             // For TEXTUAL_IMAGE type, keep smaller circular image
+            imageView?.layer.cornerRadius = 20 // Half of 40px height for circular shape
             imageView?.widthAnchor.constraint(equalToConstant: 40).isActive = true
             imageView?.heightAnchor.constraint(equalToConstant: 40).isActive = true
             imageView?.layer.borderWidth = 2
