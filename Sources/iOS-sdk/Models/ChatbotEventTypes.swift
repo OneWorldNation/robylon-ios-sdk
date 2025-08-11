@@ -73,7 +73,7 @@ public struct CustomButtonConfig {
         let brandConfig = apiResponse.user?.org_info?.brand_config
         
         return CustomButtonConfig(
-            launchType: brandConfig?.launcher_type,
+            launchType: "TEXTUAL_IMAGE", // brandConfig?.launcher_type,
             imageURL: brandConfig?.images?.launcher_image_url?.url,
             title: brandConfig?.launcher_properties?.text,
             backgroundColor: brandConfig?.colors?.brand_color,
