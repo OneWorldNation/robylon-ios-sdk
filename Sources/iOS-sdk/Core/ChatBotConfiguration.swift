@@ -3,13 +3,14 @@ import UIKit
 
 // MARK: - Chatbot Configuration
 public struct ChatbotConfiguration {
-    public let apiKey: String
-    public let orgId: String?
-    public let userId: String
-    public let userToken: String?
-    public let userProfile: UserProfile?
-    public let eventHandler: ChatbotEventHandler?
-    public let parentView: UIView?
+    let apiKey: String
+    let orgId: String?
+    let userId: String
+    let userToken: String?
+    let userProfile: UserProfile?
+    let debugMode: Bool // Default to false, can be set to true for debugging
+    let eventHandler: ChatbotEventHandler?
+    let parentView: UIView?
     
     public init(
         apiKey: String,
@@ -18,7 +19,8 @@ public struct ChatbotConfiguration {
         userToken: String? = nil,
         userProfile: UserProfile? = nil,
         eventHandler: ChatbotEventHandler? = nil,
-        parentView: UIView? = nil
+        parentView: UIView? = nil,
+        debugMode: Bool = false // Default value for debug mode
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
@@ -27,5 +29,6 @@ public struct ChatbotConfiguration {
         self.userProfile = userProfile
         self.eventHandler = eventHandler
         self.parentView = parentView
+        self.debugMode = debugMode
     }
 }

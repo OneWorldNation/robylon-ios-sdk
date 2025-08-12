@@ -2,13 +2,13 @@ import Foundation
 import UIKit
 
 // MARK: - API Models
-public struct ChatbotAPIRequest: Codable {
-    public let client_user_id: String
-    public let org_id: String
-    public let token: String
-    public let extra_info: [String: String]
+struct ChatbotAPIRequest: Codable {
+    let client_user_id: String
+    let org_id: String
+    let token: String
+    let extra_info: [String: String]
     
-    public init(clientUserId: String, orgId: String, token: String, extraInfo: [String: String] = [:]) {
+    init(clientUserId: String, orgId: String, token: String, extraInfo: [String: String] = [:]) {
         self.client_user_id = clientUserId
         self.org_id = orgId
         self.token = token
@@ -17,17 +17,17 @@ public struct ChatbotAPIRequest: Codable {
 }
 
 public struct ChatbotAPIResponse: Codable {
-    public let user: UserData?
+    let user: UserData?
     
-    public struct UserData: Codable {
-        public let org_info: OrgInfo?
+    struct UserData: Codable {
+        let org_info: OrgInfo?
     }
     
-    public struct OrgInfo: Codable {
-        public let brand_config: BrandConfig?
+    struct OrgInfo: Codable {
+        let brand_config: BrandConfig?
     }
     
-    public struct BrandConfig: Codable {
+    struct BrandConfig: Codable {
         public let name: String?
         public let banner: Banner?
         public let colors: Colors?
@@ -50,57 +50,57 @@ public struct ChatbotAPIResponse: Codable {
         let chat_iframe_url: String?
     }
     
-    public struct Banner: Codable {
-        public let title: String?
-        public let description: String?
+    struct Banner: Codable {
+        let title: String?
+        let description: String?
     }
     
-    public struct Colors: Codable {
-        public let brand_color: String?
-        public let title_bar_color: String?
+    struct Colors: Codable {
+        let brand_color: String?
+        let title_bar_color: String?
     }
     
-    public struct Footer: Codable {
-        public let footer_link: String?
-        public let show_powered_by: Bool?
-        public let footer_link_text: String?
-        public let message_box_value: String?
-        public let show_custom_footer: Bool?
+    struct Footer: Codable {
+        let footer_link: String?
+        let show_powered_by: Bool?
+        let footer_link_text: String?
+        let message_box_value: String?
+        let show_custom_footer: Bool?
     }
     
-    public struct Images: Codable {
-        public let agent_image_url: ImageData?
-        public let banner_image_url: ImageData?
-        public let header_image_url: ImageData?
-        public let launcher_image_url: ImageData?
+    struct Images: Codable {
+        let agent_image_url: ImageData?
+        let banner_image_url: ImageData?
+        let header_image_url: ImageData?
+        let launcher_image_url: ImageData?
     }
     
-    public struct ImageData: Codable {
-        public let url: String?
-        public let size: Int?
+    struct ImageData: Codable {
+        let url: String?
+        let size: Int?
     }
     
-    public struct AIDisclaimer: Codable {
-        public let message: String?
+    struct AIDisclaimer: Codable {
+        let message: String?
     }
     
-    public struct LauncherProperties: Codable {
-        public let text: String?
+    struct LauncherProperties: Codable {
+        let text: String?
     }
     
-    public struct InterfaceProperties: Codable {
-        public let position: String?
-        public let side_spacing: Int?
-        public let bottom_spacing: Int?
+    struct InterfaceProperties: Codable {
+        let position: String?
+        let side_spacing: Int?
+        let bottom_spacing: Int?
     }
 }
 
 // MARK: - Network Service
 @MainActor
-public class ChatbotNetworkService {
+final class ChatbotNetworkService {
     
     // MARK: - Singleton
-    public static let shared = ChatbotNetworkService()
+    static let shared = ChatbotNetworkService()
     
     // MARK: - Properties
     private let baseURL = "https://stage-api.robylon.ai"
@@ -110,7 +110,7 @@ public class ChatbotNetworkService {
     private init() {}
     
     // MARK: - Public Methods
-    public func initialiseChatbot(
+    func initialiseChatbot(
         config: ChatbotConfiguration,
         completion: @escaping (Result<ChatbotAPIResponse, Error>) -> Void
     ) {
@@ -217,13 +217,13 @@ public class ChatbotNetworkService {
 }
 
 // MARK: - Network Errors
-public enum ChatbotNetworkError: Error, LocalizedError {
+enum ChatbotNetworkError: Error, LocalizedError {
     case invalidURL
     case noData
     case invalidResponse
     case apiError(String)
     
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "Invalid URL"
@@ -238,49 +238,49 @@ public enum ChatbotNetworkError: Error, LocalizedError {
 }
 
 // MARK: - Analytics API Models
-public struct AnalyticsAPIRequest: Codable {
-    public let org_id: String
-    public let event_data: EventData
-    public let metadata: Metadata
-    public let event_type: String
-    public let user_id: String
+struct AnalyticsAPIRequest: Codable {
+    let org_id: String
+    let event_data: EventData
+    let metadata: Metadata
+    let event_type: String
+    let user_id: String
     
-    public struct EventData: Codable {
-        public let trigger_time: Int64
-        public let channel: String
-        public let org_id: String
-        public let client_user_id: String
-        public let event_type: String
-        public let user_profile: UserProfileData
+    struct EventData: Codable {
+        let trigger_time: Int64
+        let channel: String
+        let org_id: String
+        let client_user_id: String
+        let event_type: String
+        let user_profile: UserProfileData
     }
     
-    public struct UserProfileData: Codable {
-        public let email: String?
-        public let name: String?
+    struct UserProfileData: Codable {
+        let email: String?
+        let name: String?
     }
     
-    public struct Metadata: Codable {
-        public let timestamp: Int64
-        public let platform: String
-        public let os: String
-        public let browser: String
-        public let sdk_version: String
-        public let device: String
-        public let screen_size: ScreenSize
+    struct Metadata: Codable {
+        let timestamp: Int64
+        let platform: String
+        let os: String
+        let browser: String
+        let sdk_version: String
+        let device: String
+        let screen_size: ScreenSize
     }
     
-    public struct ScreenSize: Codable {
-        public let width: Int
-        public let height: Int
+    struct ScreenSize: Codable {
+        let width: Int
+        let height: Int
     }
 }
 
 // MARK: - Analytics Service
 @MainActor
-public class ChatbotAnalyticsService {
+final class ChatbotAnalyticsService {
     
     // MARK: - Singleton
-    public static let shared = ChatbotAnalyticsService()
+    static let shared = ChatbotAnalyticsService()
     
     // MARK: - Properties
     private let baseURL = "https://stage-api.robylon.ai"
@@ -290,7 +290,7 @@ public class ChatbotAnalyticsService {
     private init() {}
     
     // MARK: - Public Methods
-    public func recordEvent(
+    func recordEvent(
         eventType: ChatbotEventType,
         config: ChatbotConfiguration,
         additionalData: [String: Any]? = nil
