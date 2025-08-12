@@ -103,7 +103,6 @@ final class ChatbotNetworkService {
     static let shared = ChatbotNetworkService()
     
     // MARK: - Properties
-    private let baseURL = "https://stage-api.robylon.ai"
     private let session = URLSession.shared
     
     // MARK: - Private Initializer
@@ -114,6 +113,8 @@ final class ChatbotNetworkService {
         config: ChatbotConfiguration,
         completion: @escaping (Result<ChatbotAPIResponse, Error>) -> Void
     ) {
+        let baseURL = config.debugMode ? ChatbotConstants.URLs.debugBaseURL : ChatbotConstants.URLs.productionBaseURL
+        
         let finalOrgId = config.apiKey
         let clientUserId = config.userId ?? ""
         let token = config.userToken ?? ""
@@ -283,7 +284,6 @@ final class ChatbotAnalyticsService {
     static let shared = ChatbotAnalyticsService()
     
     // MARK: - Properties
-    private let baseURL = "https://stage-api.robylon.ai"
     private let session = URLSession.shared
     
     // MARK: - Private Initializer
@@ -295,6 +295,8 @@ final class ChatbotAnalyticsService {
         config: ChatbotConfiguration,
         additionalData: [String: Any]? = nil
     ) {
+        let baseURL = config.debugMode ? ChatbotConstants.URLs.debugBaseURL : ChatbotConstants.URLs.productionBaseURL
+        
         let request = buildAnalyticsRequest(eventType: eventType, config: config, additionalData: additionalData)
         
         guard let url = URL(string: "\(baseURL)/users/sdk/record-logs/") else {

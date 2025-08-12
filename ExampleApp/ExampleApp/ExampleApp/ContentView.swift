@@ -46,7 +46,8 @@ struct ContentView: View {
             eventHandler: { event in
                 print("📲 [SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
             },
-            parentView: parentView
+            parentView: parentView,
+            debugMode: true
         )
         
         iOS_sdk.initializeChatbot(config: config)

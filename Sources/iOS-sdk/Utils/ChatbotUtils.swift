@@ -156,6 +156,11 @@ public struct ChatbotConstants {
     public static let defaultButtonHeight: CGFloat = 50
     public static let defaultButtonWidth: CGFloat = 200
     
+    public struct URLs {
+        public static let debugBaseURL = "https://stage-api.robylon.ai"
+        public static let productionBaseURL = "https://api.robylon.ai"
+    }
+    
     public struct Colors {
         public static let primaryBlue = UIColor.systemBlue
         public static let secondaryGray = UIColor.systemGray
