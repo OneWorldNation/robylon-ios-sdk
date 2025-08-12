@@ -95,6 +95,59 @@ public struct ChatbotAPIResponse: Codable {
     }
 }
 
+// MARK: - Network Utilities
+@MainActor
+final class ChatbotNetworkUtils {
+    
+    /// Sets common HTTP headers for all chatbot API requests
+    /// - Parameters:
+    ///   - urlRequest: The URLRequest to set headers on
+    ///   - config: The chatbot configuration to determine environment-specific values
+    static func setCommonHeaders(_ urlRequest: inout URLRequest, config: ChatbotConfiguration) {
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.setValue("*/*", forHTTPHeaderField: "Accept")
+        urlRequest.setValue("en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7", forHTTPHeaderField: "Accept-Language")
+        urlRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        
+        // Set origin based on debug mode
+        let origin = config.debugMode ? "https://app-stage.robylon.ai" : "https://app.robylon.ai"
+        urlRequest.setValue(origin, forHTTPHeaderField: "Origin")
+        
+        urlRequest.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        urlRequest.setValue("u=1, i", forHTTPHeaderField: "Priority")
+        
+        // Set referer based on debug mode
+        let referer = config.debugMode ? "https://app-stage.robylon.ai/" : "https://app.robylon.ai/"
+        urlRequest.setValue(referer, forHTTPHeaderField: "Referer")
+        
+        urlRequest.setValue("\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"", forHTTPHeaderField: "Sec-Ch-Ua")
+        urlRequest.setValue("?0", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
+        urlRequest.setValue("\"macOS\"", forHTTPHeaderField: "Sec-Ch-Ua-Platform")
+        urlRequest.setValue("empty", forHTTPHeaderField: "Sec-Fetch-Dest")
+        urlRequest.setValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
+        urlRequest.setValue("same-site", forHTTPHeaderField: "Sec-Fetch-Site")
+        
+        // Set dynamic User-Agent
+        urlRequest.setValue(getDynamicUserAgent(), forHTTPHeaderField: "User-Agent")
+    }
+    
+    /// Generates a dynamic User-Agent string for iOS devices
+    /// - Returns: A properly formatted User-Agent string
+    private static func getDynamicUserAgent() -> String {
+        let device = UIDevice.current
+        let systemVersion = device.systemVersion
+        let systemName = device.systemName
+        let model = device.model
+        
+        // Get app version and bundle identifier
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let bundleId = Bundle.main.bundleIdentifier ?? "com.unknown.app"
+        
+        // Create a more realistic User-Agent for iOS
+        return "iOS-Chatbot-SDK/\(appVersion) (\(bundleId)) \(systemName)/\(systemVersion) \(model)"
+    }
+}
+
 // MARK: - Network Service
 @MainActor
 final class ChatbotNetworkService {
@@ -130,21 +183,10 @@ final class ChatbotNetworkService {
         }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.setValue("*/*", forHTTPHeaderField: "Accept")
-        urlRequest.setValue("en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7", forHTTPHeaderField: "Accept-Language")
-        urlRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-        urlRequest.setValue("https://app-stage.robylon.ai", forHTTPHeaderField: "Origin")
-        urlRequest.setValue("no-cache", forHTTPHeaderField: "Pragma")
-        urlRequest.setValue("u=1, i", forHTTPHeaderField: "Priority")
-        urlRequest.setValue("https://app-stage.robylon.ai/", forHTTPHeaderField: "Referer")
-        urlRequest.setValue("\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"", forHTTPHeaderField: "Sec-Ch-Ua")
-        urlRequest.setValue("?0", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
-        urlRequest.setValue("\"macOS\"", forHTTPHeaderField: "Sec-Ch-Ua-Platform")
-        urlRequest.setValue("empty", forHTTPHeaderField: "Sec-Fetch-Dest")
-        urlRequest.setValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
-        urlRequest.setValue("same-site", forHTTPHeaderField: "Sec-Fetch-Site")
-        urlRequest.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        
+        // Set common headers
+        ChatbotNetworkUtils.setCommonHeaders(&urlRequest, config: config)
+        
         do {
             let jsonData = try JSONEncoder().encode(request)
             urlRequest.httpBody = jsonData
@@ -306,21 +348,9 @@ final class ChatbotAnalyticsService {
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.setValue("*/*", forHTTPHeaderField: "Accept")
-        urlRequest.setValue("en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7", forHTTPHeaderField: "Accept-Language")
-        urlRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-        urlRequest.setValue("https://app-stage.robylon.ai", forHTTPHeaderField: "Origin")
-        urlRequest.setValue("no-cache", forHTTPHeaderField: "Pragma")
-        urlRequest.setValue("u=1, i", forHTTPHeaderField: "Priority")
-        urlRequest.setValue("https://app-stage.robylon.ai/", forHTTPHeaderField: "Referer")
-        urlRequest.setValue("\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"", forHTTPHeaderField: "Sec-Ch-Ua")
-        urlRequest.setValue("?0", forHTTPHeaderField: "Sec-Ch-Ua-Mobile")
-        urlRequest.setValue("\"macOS\"", forHTTPHeaderField: "Sec-Ch-Ua-Platform")
-        urlRequest.setValue("empty", forHTTPHeaderField: "Sec-Fetch-Dest")
-        urlRequest.setValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
-        urlRequest.setValue("same-site", forHTTPHeaderField: "Sec-Fetch-Site")
-        urlRequest.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        
+        // Set common headers
+        ChatbotNetworkUtils.setCommonHeaders(&urlRequest, config: config)
         
         do {
             let jsonData = try JSONEncoder().encode(request)
