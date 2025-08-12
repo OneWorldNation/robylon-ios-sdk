@@ -224,15 +224,47 @@ final class CustomButton: UIButton {
     }
     
     private func loadCircularImage(from urlString: String, completion: ((UIImage) -> Void)? = nil) {
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString) else { 
+            // If URL is invalid, load placeholder image
+            loadPlaceholderImage(completion: completion)
+            return 
+        }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             guard let self = self, let data = data, error == nil,
                   let image = UIImage(data: data) else {
+                // If there's an error loading the image, load placeholder image
+                DispatchQueue.main.async {
+                    self?.loadPlaceholderImage(completion: completion)
+                }
                 return
             }
             DispatchQueue.main.async {
                 completion?(image)
+            }
+        }.resume()
+    }
+    
+    private func loadPlaceholderImage(completion: ((UIImage) -> Void)? = nil) {
+        guard let placeholderURL = URL(string: "https://chatbot.robylon.ai/chatbubble.png") else {
+            // If placeholder URL is invalid, use system image
+            let systemImage = UIImage(systemName: "person.circle.fill") ?? UIImage()
+            completion?(systemImage)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: placeholderURL) { [weak self] data, response, error in
+            guard let self = self, let data = data, error == nil,
+                  let placeholderImage = UIImage(data: data) else {
+                // If placeholder fails to load, use system image
+                DispatchQueue.main.async {
+                    let systemImage = UIImage(systemName: "person.circle.fill") ?? UIImage()
+                    completion?(systemImage)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                completion?(placeholderImage)
             }
         }.resume()
     }
