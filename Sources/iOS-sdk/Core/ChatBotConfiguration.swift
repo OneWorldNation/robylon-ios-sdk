@@ -11,6 +11,7 @@ public struct ChatbotConfiguration {
     let debugMode: Bool // Default to false, can be set to true for debugging
     let eventHandler: ChatbotEventHandler?
     let parentView: UIView?
+    let presetationStyle: ChatBotPresentationStyle
     
     public init(
         apiKey: String,
@@ -20,7 +21,8 @@ public struct ChatbotConfiguration {
         userProfile: UserProfile? = nil,
         eventHandler: ChatbotEventHandler? = nil,
         parentView: UIView? = nil,
-        debugMode: Bool = false // Default value for debug mode
+        debugMode: Bool = false, // Default value for debug mode
+        presetationStyle: ChatBotPresentationStyle = .default // Default presentation style
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
@@ -30,5 +32,20 @@ public struct ChatbotConfiguration {
         self.eventHandler = eventHandler
         self.parentView = parentView
         self.debugMode = debugMode
+        self.presetationStyle = presetationStyle
+    }
+}
+
+public enum ChatBotPresentationStyle {
+    case `default`
+    case fullscreen
+    
+    var modalPresentationStyle: UIModalPresentationStyle {
+        switch self {
+        case .default:
+            return .automatic
+        case .fullscreen:
+            return .fullScreen
+        }
     }
 }

@@ -230,7 +230,7 @@ public class Chatbot {
                 userProfile: config.userProfile, 
                 eventHandler: config.eventHandler
             )
-            
+            webVC.modalPresentationStyle = config.presetationStyle.modalPresentationStyle
             self.webViewController = webVC
             
             // Set dismiss completion to clear reference
