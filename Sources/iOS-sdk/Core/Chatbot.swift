@@ -3,8 +3,8 @@ import Foundation
 
 // MARK: - Chatbot Singleton
 @MainActor
-public class Chatbot {
-    public static let shared = Chatbot()
+class Chatbot {
+    static let shared = Chatbot()
     
     // MARK: - Properties
     private var configuration: ChatbotConfiguration?
@@ -15,8 +15,8 @@ public class Chatbot {
     // MARK: - Private Initializer
     private init() {}
     
-    // MARK: - Public Methods
-    public func initialize(config: ChatbotConfiguration) {
+    // MARK: -  Methods
+    func initialize(config: ChatbotConfiguration) {
         guard !isInitialized else {
             print("Chatbot is already initialized")
             return
@@ -214,7 +214,7 @@ public class Chatbot {
         }
     }
     
-    func openChatbot() {
+    private func openChatbot() {
         guard isInitialized, let config = configuration else {
             print("Chatbot must be initialized before opening")
             return
@@ -255,32 +255,6 @@ public class Chatbot {
         }
     }
     
-    func closeChatbot() {
-        guard let webVC = webViewController else { return }
-        
-        webVC.dismiss(animated: true) { [weak self] in
-            guard let self = self, let config = self.configuration else { return }
-            
-            // Emit chatbot closed event
-            let event = ChatbotEvent(type: .chatbotClosed)
-            config.eventHandler?(event)
-            
-            ChatbotUtils.logInfo("Chatbot closed")
-        }
-    }
-    
-    func refreshSession() {
-        guard isInitialized, let config = configuration else { return }
-        
-        let event = ChatbotEvent(type: .sessionRefreshed)
-        config.eventHandler?(event)
-    }
-    
-    func isChatbotOpen() -> Bool {
-        return webViewController != nil
-    }
-    
-    // MARK: - Private Methods
     private func handleButtonCallback() {
         guard let config = configuration else { return }
         
@@ -301,19 +275,7 @@ public class Chatbot {
         openChatbot()
     }
     
-    // MARK: - Utility Methods
-    public func getConfiguration() -> ChatbotConfiguration? {
+    func getConfiguration() -> ChatbotConfiguration? {
         return configuration
     }
-    
-    func getCustomBottomConfig() -> CustomButtonConfig? {
-        return customBottomConfig
-    }
-    
-    public func reset() {
-        configuration = nil
-        isInitialized = false
-        webViewController = nil
-        customBottomConfig = nil
-    }
-} 
+}

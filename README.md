@@ -23,7 +23,7 @@ Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/iOS-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/yourusername/iOS-sdk.git", from: "1.0.1")
 ]
 ```
 
@@ -269,6 +269,165 @@ struct ContentView: View {
                 iOS_sdk.initializeChatbot(config: config)
             }
         )
+    }
+}
+```
+
+## UIKit Integration
+
+For UIKit apps, you can integrate the chatbot directly in your view controller:
+
+```swift
+import UIKit
+import iOS_sdk
+
+class ViewController: UIViewController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupChatbot()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        // Add your app's UI elements here
+        let titleLabel = UILabel()
+        titleLabel.text = "Welcome to the App"
+        titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        titleLabel.textAlignment = .center
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+    }
+    
+    private func setupChatbot() {
+        let userProfile = UserProfile(
+            name: "UIKit User",
+            email: "user@example.com"
+        )
+        
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            userId: "uikit-user-123",
+            userToken: "auth-token-123",
+            userProfile: userProfile,
+            debugMode: true, // Use staging for development
+            eventHandler: { [weak self] event in
+                // Handle all chatbot events
+                print("📱 Event: \(event.type.rawValue)")
+                
+                switch event.type {
+                case .chatbotButtonLoaded:
+                    print("✅ Chatbot button loaded successfully")
+                    // You can perform UI updates here if needed
+                    DispatchQueue.main.async {
+                        self?.handleButtonLoaded()
+                    }
+                    
+                case .chatbotButtonClicked:
+                    print("👆 User clicked chatbot button")
+                    
+                case .chatbotOpened:
+                    print("🚀 Chatbot interface opened")
+                    
+                case .chatbotClosed:
+                    print("🔒 Chatbot interface closed")
+                    
+                case .chatInitialized:
+                    print("✅ Chatbot initialized successfully")
+                    
+                case .chatInitializationFailed:
+                    print("❌ Chatbot initialization failed")
+                    if let error = event.data?["error"] as? String {
+                        print("   Error: \(error)")
+                        // Show error alert to user
+                        DispatchQueue.main.async {
+                            self?.showErrorAlert(message: error)
+                        }
+                    }
+                    
+                case .sessionRefreshed:
+                    print("🔄 Session refreshed")
+                    
+                default:
+                    break
+                }
+            },
+            parentView: self.view, // Button will be added to this view controller's view
+            presetationStyle: .default // or .fullscreen for full screen presentation
+        )
+        
+        iOS_sdk.initializeChatbot(config: config)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func handleButtonLoaded() {
+        // Perform any UI updates when button is loaded
+        print("Chatbot button is ready for interaction")
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(
+            title: "Chatbot Error",
+            message: message,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+```
+
+### UIKit Integration with Tab Bar Controller
+
+For apps with tab bar controllers, you can add the chatbot to a specific tab:
+
+```swift
+import UIKit
+import iOS_sdk
+
+class TabBarController: UITabBarController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupTabs()
+        setupChatbot()
+    }
+    
+    private func setupTabs() {
+        let firstVC = UIViewController()
+        firstVC.view.backgroundColor = .systemBackground
+        firstVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), tag: 0)
+        
+        let secondVC = UIViewController()
+        secondVC.view.backgroundColor = .systemBackground
+        secondVC.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(systemName: "person"), tag: 1)
+        
+        viewControllers = [firstVC, secondVC]
+    }
+    
+    private func setupChatbot() {
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            debugMode: true,
+            eventHandler: { event in
+                print("Chatbot Event: \(event.type.rawValue)")
+            },
+            parentView: view, // Add to the tab bar controller's view
+            presetationStyle: .default
+        )
+        
+        iOS_sdk.initializeChatbot(config: config)
     }
 }
 ```
