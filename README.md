@@ -1,6 +1,6 @@
 # iOS Chatbot SDK
 
-A Swift Package Manager library that provides a singleton chatbot class with custom button integration and WebView-based chat interface.
+A Swift Package Manager library that provides a singleton chatbot class with custom button integration and WebView-based chat interface. The SDK supports both staging and production environments with comprehensive event tracking and analytics.
 
 ## Features
 
@@ -10,6 +10,10 @@ A Swift Package Manager library that provides a singleton chatbot class with cus
 - 🎨 **Custom Button**: Pre-built button component with WebView integration
 - 🌐 **WebView Interface**: Modern chat interface with real-time messaging
 - 📊 **Event Tracking**: Track all chatbot interactions and state changes
+- 🔄 **Environment Support**: Debug mode for staging, production mode for live apps
+- 🎭 **Presentation Styles**: Support for default and fullscreen presentation modes
+- 🖼️ **Dynamic Button Styling**: Button appearance driven by API response
+- 📈 **Analytics Integration**: Automatic event tracking and logging
 
 ## Installation
 
@@ -49,46 +53,30 @@ let eventHandler: ChatbotEventHandler = { event in
     }
 }
 
-// Initialize chatbot
-iOS_sdk.initializeChatbot(
+// Create configuration
+let config = ChatbotConfiguration(
     apiKey: "YOUR_API_KEY", // Mandatory
     userId: "optional-user-id",
     userToken: "optional-auth-token",
     userProfile: userProfile,
-    eventHandler: eventHandler
+    debugMode: false, // Set to true for staging environment
+    eventHandler: eventHandler,
+    parentView: self.view, // UIView where button will be added
+    presetationStyle: .default // or .fullscreen. This denotes how the chatbot will open.
 )
+
+// Initialize chatbot
+iOS_sdk.initializeChatbot(config: config)
 ```
 
-### 2. Create and Use the Chatbot Button
+### 2. Automatic Button Creation
 
-```swift
-// Create button
-if let button = iOS_sdk.createChatbotButton() {
-    button.setTitle("💬 Open Chatbot", for: .normal)
-    button.backgroundColor = .systemBlue
-    button.setTitleColor(.white, for: .normal)
-    button.layer.cornerRadius = 12
-    
-    // Add to your view
-    view.addSubview(button)
-    // Set up constraints...
-}
-```
+The SDK automatically creates and adds a custom button to the specified parent view. The button's appearance is dynamically configured based on the API response:
 
-### 3. Programmatic Control
+- **Text Only**: Button with custom text and styling
+- **Image Only**: Circular button with custom image
+- **Text + Image**: Button with text and circular image
 
-```swift
-// Open chatbot programmatically
-iOS_sdk.openChatbot()
-
-// Check if chatbot is open
-let isOpen = iOS_sdk.isChatbotOpen()
-
-// Close chatbot
-iOS_sdk.closeChatbot()
-
-// Refresh session
-iOS_sdk.refreshChatbotSession()
 ```
 
 ## Configuration Parameters
@@ -99,10 +87,14 @@ iOS_sdk.refreshChatbotSession()
 
 ### Optional Parameters
 
-- **`userId`** (String?): Optional user identifier
+- **`orgId`** (String?): Optional organization ID for multi-tenancy
+- **`userId`** (String?): Optional user identifier (auto-generated UUID if not provided)
 - **`userToken`** (String?): Optional authentication token
 - **`userProfile`** (UserProfile?): Optional user profile information
+- **`debugMode`** (Bool): Set to `true` for staging environment, `false` for production (default: `false`)
 - **`eventHandler`** (ChatbotEventHandler?): Optional event callback handler
+- **`parentView`** (UIView?): UIView where the chatbot button will be added
+- **`presetationStyle`** (ChatBotPresentationStyle): How the chatbot interface should be presented (default: `.default`)
 
 ### UserProfile Structure
 
@@ -112,6 +104,39 @@ let userProfile = UserProfile(
     email: "optional.email@example.com"
 )
 ```
+
+### Presentation Styles
+
+```swift
+public enum ChatBotPresentationStyle {
+    case `default`    // Automatic presentation style
+    case fullscreen   // Full screen presentation
+}
+```
+
+## Environment Configuration
+
+The SDK supports two environments controlled by the `debugMode` parameter:
+
+### Debug Mode (Staging)
+```swift
+let config = ChatbotConfiguration(
+    apiKey: "your-api-key",
+    debugMode: true, // Uses staging API
+    // ... other parameters
+)
+```
+- **Use Case**: Development and testing
+
+### Production Mode
+```swift
+let config = ChatbotConfiguration(
+    apiKey: "your-api-key",
+    debugMode: false, // Uses production API
+    // ... other parameters
+)
+```
+- **Use Case**: Live applications
 
 ## Event System
 
@@ -171,12 +196,9 @@ import iOS_sdk
 
 class ViewController: UIViewController {
     
-    private var chatbotButton: UIButton?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupChatbot()
-        setupUI()
     }
     
     private func setupChatbot() {
@@ -185,40 +207,68 @@ class ViewController: UIViewController {
             email: "user@example.com"
         )
         
-        iOS_sdk.initializeChatbot(
+        let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",
             userId: "user123",
             userToken: "auth_token_123",
-            userProfile: userProfile
-        ) { event in
-            // Handle all chatbot events
-            print("📱 Event: \(event.type.rawValue)")
-        }
+            userProfile: userProfile,
+            debugMode: true, // Use staging for development
+            eventHandler: { event in
+                // Handle all chatbot events
+                print("📱 Event: \(event.type.rawValue)")
+                
+                switch event.type {
+                case .chatbotButtonLoaded:
+                    print("✅ Button loaded and ready")
+                case .chatbotOpened:
+                    print("🚀 Chatbot interface opened")
+                case .chatbotClosed:
+                    print("🔒 Chatbot interface closed")
+                case .chatInitializationFailed:
+                    if let error = event.data?["error"] as? String {
+                        print("❌ Initialization failed: \(error)")
+                    }
+                default:
+                    break
+                }
+            },
+            parentView: self.view, // Button will be added to this view
+            presetationStyle: .default
+        )
+        
+        iOS_sdk.initializeChatbot(config: config)
     }
-    
-    private func setupUI() {
-        view.backgroundColor = .white
-        
-        // Create and configure chatbot button
-        chatbotButton = iOS_sdk.createChatbotButton()
-        
-        if let button = chatbotButton {
-            button.setTitle("💬 Open Chatbot", for: .normal)
-            button.backgroundColor = .systemBlue
-            button.setTitleColor(.white, for: .normal)
-            button.layer.cornerRadius = 12
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-            button.translatesAutoresizingMaskIntoConstraints = false
-            
-            view.addSubview(button)
-            
-            NSLayoutConstraint.activate([
-                button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                button.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-                button.widthAnchor.constraint(equalToConstant: 200),
-                button.heightAnchor.constraint(equalToConstant: 50)
-            ])
+}
+```
+
+## SwiftUI Integration
+
+For SwiftUI apps, you can use the `ParentViewProvider` to get a UIView reference:
+
+```swift
+import SwiftUI
+import iOS_sdk
+
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Text("Welcome to the App")
+            // Other SwiftUI content
         }
+        .background(
+            ParentViewProvider { parentView in
+                // Initialize chatbot with the parent view
+                let config = ChatbotConfiguration(
+                    apiKey: "YOUR_API_KEY",
+                    debugMode: true,
+                    eventHandler: { event in
+                        print("Event: \(event.type.rawValue)")
+                    },
+                    parentView: parentView
+                )
+                iOS_sdk.initializeChatbot(config: config)
+            }
+        )
     }
 }
 ```
@@ -227,16 +277,22 @@ class ViewController: UIViewController {
 
 The SDK is built using a singleton pattern with the following components:
 
-- **`Chatbot`**: Main singleton class managing chatbot state and lifecycle
-- **`ChatbotConfiguration`**: Configuration structure for initialization
-- **`ChatbotEvent`**: Event structure with type, timestamp, and optional data
-- **`UserProfile`**: User information structure
-- **`WebViewController`**: WebView-based chat interface
-- **`CustomButton`**: Pre-built button component
+### Core Components
+- **`iOS_sdk`**: Main public interface for SDK initialization
+- **`Chatbot`**: Singleton class managing chatbot state and lifecycle
+
+## Memory Management
+
+The SDK implements proper memory management:
+
+- **Singleton Pattern**: Single instance prevents memory leaks
+- **Weak References**: Prevents retain cycles in closures
+- **Automatic Cleanup**: WebView resources are properly cleaned up
+- **Listener Management**: JavaScript listeners are added/removed appropriately
 
 ## Requirements
 
-- iOS 13.0+
+- iOS 14.0+
 - Swift 5.0+
 - Xcode 12.0+
 
@@ -246,4 +302,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support and questions, please open an issue on GitHub or contact the development team. 
+For support and questions, please open an issue on GitHub or contact the development team.
+
+## Changelog
+
+### Version 1.0.1
+- Initial release with singleton chatbot implementation
+- Custom button with dynamic styling
+- WebView-based chat interface
+- Comprehensive event system
+- Environment support (staging/production)
+- Analytics integration
+- SwiftUI compatibility 
