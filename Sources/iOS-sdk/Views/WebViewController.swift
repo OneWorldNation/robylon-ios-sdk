@@ -20,6 +20,7 @@ final class WebViewController: UIViewController {
     var dismissCompletion: (() -> Void)?
     
     private var webView: WKWebView!
+    private var isInitialized = false
 
     init(
         apiKey: String,
@@ -50,33 +51,27 @@ final class WebViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupWebView()
-        loadChatbotURL()
+        
+        // Only load URL if not already loaded
+        if !isInitialized {
+            loadChatbotURL()
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Add listeners when view appears
+        if isInitialized {
+            addMessageListeners()
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        // If this is a dismissal (not a push), clean up
-        if isBeingDismissed {
-            cleanupWebView()
-        }
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        
-        // If this is a dismissal, clear references
-        if isBeingDismissed {
-            // Call dismiss completion and clear it
-            dismissCompletion?()
-            dismissCompletion = nil
-            
-            // Clear references to prevent retain cycles
-            eventHandler = nil
-            webView = nil
-            
-            ChatbotUtils.logInfo("WebViewController dismissed and cleaned up")
-        }
+        // Remove listeners when view disappears
+        removeMessageListeners()
     }
     
     // MARK: - Setup
@@ -157,47 +152,17 @@ final class WebViewController: UIViewController {
     }
     
     private func closeButtonTapped() {
-        // Remove all message handlers to prevent memory leaks
-        cleanupWebView()
-        
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             
             // Call dismiss completion and clear it
             self.dismissCompletion?()
-            self.dismissCompletion = nil
-            
-            // Clear references to prevent retain cycles
-            self.eventHandler = nil
-            self.webView = nil
         }
     }
     
-    // MARK: - Cleanup Methods
-    private func cleanupWebView() {
-        guard let webView = webView else { return }
-        
-        // Remove all message handlers
-        webView.configuration.userContentController.removeAllScriptMessageHandlers()
-        
-        // Stop loading and clear navigation delegate
-        webView.stopLoading()
-        webView.navigationDelegate = nil
-        webView.uiDelegate = nil
-        
-        // Clear the web view content
-        webView.loadHTMLString("", baseURL: nil)
-        
-        ChatbotUtils.logInfo("WebView cleanup completed")
-    }
-    
-    // MARK: - Deinit
-    deinit {
-        ChatbotUtils.logInfo("WebViewController deallocated")
-    }
-    
-    // MARK: - JavaScript Communication
-    private func injectPostMessageEvents() {
+     // MARK: - Message Listeners Management
+    private func addMessageListeners() {
+        guard !isInitialized else { return }
         let systemInfo = getSystemInfo()
         let userId = UUID().uuidString
         let userToken = self.userToken?.isEmpty == false ? self.userToken! : nil
@@ -245,8 +210,48 @@ final class WebViewController: UIViewController {
         webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 ChatbotUtils.logError("Failed to inject postMessage events: \(error.localizedDescription)")
+            } else {
+                self.isInitialized = true
+                ChatbotUtils.logInfo("Message listeners added successfully")
             }
         }
+    }
+    
+    private func removeMessageListeners() {
+        let script = """
+        // Remove window.postMessage listener
+        if (window.removeEventListener) {
+            window.removeEventListener('message', window.chatbotMessageListener);
+        }
+        """
+        
+        webView.evaluateJavaScript(script) { result, error in
+            if let error = error {
+                ChatbotUtils.logError("Failed to remove message listeners: \(error.localizedDescription)")
+            } else {
+                ChatbotUtils.logInfo("Message listeners removed successfully")
+            }
+        }
+    }
+    
+    // MARK: - Cleanup Methods
+    private func cleanupWebView() {
+        guard let webView = webView else { return }
+        
+        // Remove all message handlers
+        webView.configuration.userContentController.removeAllScriptMessageHandlers()
+        
+        // Stop loading and clear navigation delegate
+        webView.stopLoading()
+        webView.navigationDelegate = nil
+        webView.uiDelegate = nil
+        
+        ChatbotUtils.logInfo("WebView cleanup completed")
+    }
+    
+    // MARK: - Deinit
+    deinit {
+        ChatbotUtils.logInfo("WebViewController deallocated")
     }
     
     private func getSystemInfo() -> (platform: String, os: String, browser: String, sdk_version: String, device: String, screen_size: String) {
@@ -289,7 +294,7 @@ extension WebViewController: WKNavigationDelegate {
         
         // Wait a bit for the page to fully load, then inject postMessage events
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.injectPostMessageEvents()
+            self.addMessageListeners()
         }
     }
     
@@ -318,10 +323,6 @@ extension WebViewController: WKScriptMessageHandler {
     internal func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
         ChatbotUtils.logInfo("Received message from JavaScript: \(message.name) - \(message.body)")
-        
-        if message.name == "jsLogger", let body = message.body as? String {
-            print("🪵 JavaScript Log: \(body)")
-        }
         
         // Handle postMessage responses
         if message.name == "chatbotHandler",
@@ -419,7 +420,7 @@ extension WebViewController: WKScriptMessageHandler {
                 let event = ChatbotEvent(type: .sessionRefreshed, data: data)
                 eventHandler?(event)
                 
-                    default:
+            default:
                 ChatbotUtils.logWarning("📨 Unknown structured message type: \(type)")
             }
         } else {

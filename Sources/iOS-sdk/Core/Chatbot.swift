@@ -220,13 +220,28 @@ public class Chatbot {
             return
         }
         
-        // Create and present WebViewController
-        let webVC = WebViewController(apiKey: config.apiKey, url: customBottomConfig?.chatBotUrl ?? "" , userId: config.userId, userToken: config.userToken, userProfile: config.userProfile, eventHandler: config.eventHandler)
-        
-        self.webViewController = webVC
+        // Use existing WebViewController if available, otherwise create new one
+        if webViewController == nil {
+            let webVC = WebViewController(
+                apiKey: config.apiKey, 
+                url: customBottomConfig?.chatBotUrl ?? "", 
+                userId: config.userId, 
+                userToken: config.userToken, 
+                userProfile: config.userProfile, 
+                eventHandler: config.eventHandler
+            )
+            
+            self.webViewController = webVC
+            
+            // Set dismiss completion to clear reference
+            webVC.dismissCompletion = { [weak self] in
+                ChatbotUtils.logInfo("WebViewController reference cleared from Chatbot")
+            }
+        }
         
         // Present the WebViewController
-        if let topVC = UIApplication.shared.windows.first?.rootViewController {
+        if let topVC = UIApplication.shared.windows.first?.rootViewController,
+           let webVC = webViewController {
             topVC.present(webVC, animated: true) {
                 // Emit chatbot opened event
                 let openedEvent = ChatbotEvent(type: .chatbotOpened)
@@ -237,20 +252,11 @@ public class Chatbot {
                 )
                 config.eventHandler?(openedEvent)
             }
-            
-            // Set dismiss completion to clear reference
-            webVC.dismissCompletion = { [weak self] in
-                self?.webViewController = nil
-                ChatbotUtils.logInfo("WebViewController reference cleared from Chatbot")
-            }
         }
     }
     
     func closeChatbot() {
-        guard let webVC = webViewController, let config = configuration else { return }
-        
-        // Clear the reference immediately to prevent retain cycles
-        self.webViewController = nil
+        guard let webVC = webViewController else { return }
         
         webVC.dismiss(animated: true) { [weak self] in
             guard let self = self, let config = self.configuration else { return }
@@ -259,7 +265,7 @@ public class Chatbot {
             let event = ChatbotEvent(type: .chatbotClosed)
             config.eventHandler?(event)
             
-            ChatbotUtils.logInfo("Chatbot closed and cleaned up")
+            ChatbotUtils.logInfo("Chatbot closed")
         }
     }
     
