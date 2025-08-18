@@ -35,7 +35,7 @@ struct ContentView: View {
     
     private func initializeChatbot(with parentView: UIView) {
         let config = ChatbotConfiguration(
-            apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
+            apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac", // "82d83024-c677-4e93-bb95-997b38bc4209",
             orgId: nil,
             userId: UUID().uuidString, // Generate a proper userId
             userToken: "asdsadassa",

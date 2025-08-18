@@ -34,12 +34,14 @@ public struct ChatbotEvent {
 
 // MARK: - User Profile
 public struct UserProfile: Codable {
-    public let name: String?
-    public let email: String?
+    let name: String?
+    let email: String?
+    let is_Test_User: Bool
     
-    public init(name: String? = nil, email: String? = nil) {
+    public init(name: String? = nil, email: String? = nil, isTestUser: Bool = true) {
         self.name = name
         self.email = email
+        self.is_Test_User = isTestUser
     }
 }
 
