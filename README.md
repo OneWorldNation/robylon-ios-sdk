@@ -1,4 +1,4 @@
-# iOS Chatbot SDK
+# Robylon iOS Chatbot SDK
 
 A Swift Package Manager library that provides a singleton chatbot class with custom button integration and WebView-based chat interface. The SDK supports both staging and production environments with comprehensive event tracking and analytics.
 
@@ -23,7 +23,7 @@ Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/iOS-sdk.git", from: "1.0.2")
+    .package(url: "https://github.com/OneWorldNation/robylon-ios-sdk", from: "1.0.0")
 ]
 ```
 
@@ -37,7 +37,7 @@ Or add it directly in Xcode:
 ### 1. Initialize the Chatbot
 
 ```swift
-import iOS_sdk
+import RobylonSDK
 
 // Create user profile
 let userProfile = UserProfile(
@@ -59,14 +59,15 @@ let config = ChatbotConfiguration(
     userId: "optional-user-id",
     userToken: "optional-auth-token",
     userProfile: userProfile,
-    debugMode: false, // Set to true for staging environment
     eventHandler: eventHandler,
     parentView: self.view, // UIView where button will be added
-    presetationStyle: .default // or .fullscreen. This denotes how the chatbot will open.
+    debugMode: false, // Set to true for staging environment
+    presentationStyle: .default // or .fullscreen. This denotes how the chatbot will open.
 )
 
+
 // Initialize chatbot
-iOS_sdk.initializeChatbot(config: config)
+RobylonSDK.initializeChatbot(config: config)
 ```
 
 ### 2. Automatic Button Creation
@@ -76,8 +77,6 @@ The SDK automatically creates and adds a custom button to the specified parent v
 - **Text Only**: Button with custom text and styling
 - **Image Only**: Circular button with custom image
 - **Text + Image**: Button with text and circular image
-
-```
 
 ## Configuration Parameters
 
@@ -94,7 +93,7 @@ The SDK automatically creates and adds a custom button to the specified parent v
 - **`debugMode`** (Bool): Set to `true` for staging environment, `false` for production (default: `false`)
 - **`eventHandler`** (ChatbotEventHandler?): Optional event callback handler
 - **`parentView`** (UIView?): UIView where the chatbot button will be added
-- **`presetationStyle`** (ChatBotPresentationStyle): How the chatbot interface should be presented (default: `.default`)
+- **`presentationStyle`** (ChatBotPresentationStyle): How the chatbot interface should be presented (default: `.default`)
 
 ### UserProfile Structure
 
@@ -192,7 +191,7 @@ let eventHandler: ChatbotEventHandler = { event in
 
 ```swift
 import UIKit
-import iOS_sdk
+import RobylonSDK
 
 class ViewController: UIViewController {
     
@@ -233,10 +232,10 @@ class ViewController: UIViewController {
                 }
             },
             parentView: self.view, // Button will be added to this view
-            presetationStyle: .default
+            presentationStyle: .default
         )
         
-        iOS_sdk.initializeChatbot(config: config)
+        RobylonSDK.initializeChatbot(config: config)
     }
 }
 ```
@@ -247,7 +246,7 @@ For SwiftUI apps, you can use the `ParentViewProvider` to get a UIView reference
 
 ```swift
 import SwiftUI
-import iOS_sdk
+import RobylonSDK
 
 struct ContentView: View {
     var body: some View {
@@ -266,9 +265,26 @@ struct ContentView: View {
                     },
                     parentView: parentView
                 )
-                iOS_sdk.initializeChatbot(config: config)
+                RobylonSDK.initializeChatbot(config: config)
             }
         )
+    }
+}
+// MARK: - Parent View Provider
+struct ParentViewProvider: UIViewRepresentable {
+    let onViewReady: (UIView) -> Void
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // Call the closure when the view is ready
+        DispatchQueue.main.async {
+            onViewReady(uiView)
+        }
     }
 }
 ```
@@ -279,7 +295,7 @@ For UIKit apps, you can integrate the chatbot directly in your view controller:
 
 ```swift
 import UIKit
-import iOS_sdk
+import RobylonSDK
 
 class ViewController: UIViewController {
     
@@ -362,10 +378,10 @@ class ViewController: UIViewController {
                 }
             },
             parentView: self.view, // Button will be added to this view controller's view
-            presetationStyle: .default // or .fullscreen for full screen presentation
+            presentationStyle: .default // or .fullscreen for full screen presentation
         )
         
-        iOS_sdk.initializeChatbot(config: config)
+        RobylonSDK.initializeChatbot(config: config)
     }
     
     // MARK: - Helper Methods
@@ -394,7 +410,7 @@ For apps with tab bar controllers, you can add the chatbot to a specific tab:
 
 ```swift
 import UIKit
-import iOS_sdk
+import RobylonSDK
 
 class TabBarController: UITabBarController {
     
@@ -424,10 +440,10 @@ class TabBarController: UITabBarController {
                 print("Chatbot Event: \(event.type.rawValue)")
             },
             parentView: view, // Add to the tab bar controller's view
-            presetationStyle: .default
+            presentationStyle: .default
         )
         
-        iOS_sdk.initializeChatbot(config: config)
+        RobylonSDK.initializeChatbot(config: config)
     }
 }
 ```
@@ -437,7 +453,7 @@ class TabBarController: UITabBarController {
 The SDK is built using a singleton pattern with the following components:
 
 ### Core Components
-- **`iOS_sdk`**: Main public interface for SDK initialization
+- **`RobylonSDK`**: Main public interface for SDK initialization
 - **`Chatbot`**: Singleton class managing chatbot state and lifecycle
 
 ## Memory Management
@@ -462,14 +478,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support and questions, please open an issue on GitHub or contact the development team.
-
-## Changelog
-
-### Version 1.0.1
-- Initial release with singleton chatbot implementation
-- Custom button with dynamic styling
-- WebView-based chat interface
-- Comprehensive event system
-- Environment support (staging/production)
-- Analytics integration
-- SwiftUI compatibility 

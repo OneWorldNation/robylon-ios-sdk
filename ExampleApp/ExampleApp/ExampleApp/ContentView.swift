@@ -48,7 +48,7 @@ struct ContentView: View {
             },
             parentView: parentView,
             debugMode: true,
-            presetationStyle: .fullscreen
+            presentationStyle: .fullscreen
         )
         
         RobylonSDK.initializeChatbot(config: config)
@@ -70,19 +70,6 @@ struct ParentViewProvider: UIViewRepresentable {
         DispatchQueue.main.async {
             onViewReady(uiView)
         }
-    }
-}
-
-// MARK: - Custom Button View
-struct CustomButtonView: UIViewRepresentable {
-    let button: UIButton
-    
-    func makeUIView(context: Context) -> UIButton {
-        return button
-    }
-    
-    func updateUIView(_ uiView: UIButton, context: Context) {
-        // Update if needed
     }
 }
 
