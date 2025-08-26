@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "iOS-sdk",
+    name: "robylon-ios-sdk",
     platforms: [
         .iOS(.v14)
     ],
