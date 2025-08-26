@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0BFD828F2E3E4DCB00BC6897 /* iOS-sdk in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD828E2E3E4DCB00BC6897 /* iOS-sdk */; };
-		0BFD82B72E4391B500BC6897 /* iOS-sdk in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD82B62E4391B500BC6897 /* iOS-sdk */; };
-		0BFD830D2E5DF1C900BC6897 /* iOS-sdk in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD830C2E5DF1C900BC6897 /* iOS-sdk */; };
+		0BFD83112E5DF91300BC6897 /* RobylonSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 0BFD83102E5DF91300BC6897 /* RobylonSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,9 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0BFD830D2E5DF1C900BC6897 /* iOS-sdk in Frameworks */,
-				0BFD828F2E3E4DCB00BC6897 /* iOS-sdk in Frameworks */,
-				0BFD82B72E4391B500BC6897 /* iOS-sdk in Frameworks */,
+				0BFD83112E5DF91300BC6897 /* RobylonSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,7 +72,7 @@
 			packageProductDependencies = (
 				0BFD828E2E3E4DCB00BC6897 /* iOS-sdk */,
 				0BFD82B62E4391B500BC6897 /* iOS-sdk */,
-				0BFD830C2E5DF1C900BC6897 /* iOS-sdk */,
+				0BFD83102E5DF91300BC6897 /* RobylonSDK */,
 			);
 			productName = ExampleApp;
 			productReference = 0BFD82542E3E4C0300BC6897 /* ExampleApp.app */;
@@ -107,7 +103,7 @@
 			mainGroup = 0BFD824B2E3E4C0300BC6897;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0BFD830B2E5DF1C900BC6897 /* XCLocalSwiftPackageReference "../../robylon-ios-sdk" */,
+				0BFD830F2E5DF91300BC6897 /* XCLocalSwiftPackageReference "../../robylon-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0BFD82552E3E4C0300BC6897 /* Products */;
@@ -337,7 +333,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0BFD830B2E5DF1C900BC6897 /* XCLocalSwiftPackageReference "../../robylon-ios-sdk" */ = {
+		0BFD830F2E5DF91300BC6897 /* XCLocalSwiftPackageReference "../../robylon-ios-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../robylon-ios-sdk";
 		};
@@ -352,9 +348,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = "iOS-sdk";
 		};
-		0BFD830C2E5DF1C900BC6897 /* iOS-sdk */ = {
+		0BFD83102E5DF91300BC6897 /* RobylonSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = "iOS-sdk";
+			productName = RobylonSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

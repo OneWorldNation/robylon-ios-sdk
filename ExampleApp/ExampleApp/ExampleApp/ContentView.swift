@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import iOS_sdk
+import RobylonSDK
 
 struct ContentView: View {
     @State private var customButton: UIButton?
@@ -51,7 +51,7 @@ struct ContentView: View {
             presetationStyle: .fullscreen
         )
         
-        iOS_sdk.initializeChatbot(config: config)
+        RobylonSDK.initializeChatbot(config: config)
     }
 }
 

@@ -22,10 +22,10 @@ import Foundation
 ///     presetationStyle: .default
 /// )
 /// 
-/// iOS_sdk.initializeChatbot(config: config)
+/// RobylonSDK.initializeChatbot(config: config)
 /// ```
 @MainActor
-public struct iOS_sdk {
+public struct RobylonSDK {
     
     /// Initializes the chatbot with the provided configuration.
     /// This method must be called before using any other chatbot functionality.
@@ -69,7 +69,7 @@ public struct iOS_sdk {
     ///     parentView: self.view
     /// )
     /// 
-    /// iOS_sdk.initializeChatbot(config: config)
+    /// RobylonSDK.initializeChatbot(config: config)
     /// ```
     public static func initializeChatbot(config: ChatbotConfiguration) {
         Chatbot.shared.initialize(config: config)

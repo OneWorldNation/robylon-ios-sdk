@@ -11,18 +11,19 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "iOS-sdk",
-            targets: ["iOS-sdk"])
+            name: "RobylonSDK",
+            targets: ["RobylonSDK"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "iOS-sdk",
-            path: "Sources/iOS-sdk"),
+            name: "RobylonSDK",
+            path: "Sources/RobylonSDK"),
         .testTarget(
-            name: "iOS-sdkTests",
-            dependencies: ["iOS-sdk"]
+            name: "RobylonSDKTests",
+            dependencies: ["RobylonSDK"],
+            path: "Tests/RobylonSDKTests"
         ),
     ]
 )
