@@ -273,8 +273,6 @@ final class WebViewController: UIViewController {
             device = "CarPlay"
         case .mac:
             device = "Mac"
-        case .vision:
-            device = "Vision"
         @unknown default:
             device = "Unknown"
         }

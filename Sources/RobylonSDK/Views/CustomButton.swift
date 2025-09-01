@@ -212,7 +212,8 @@ final class CustomButton: UIButton {
         // Load and configure image
         if let imageURLString = config.imageURL, !imageURLString.isEmpty {
             loadCircularImage(from: imageURLString) { [weak self] image in
-                self?.rightImageView.image = image.withRenderingMode(.alwaysOriginal)
+                guard let self = self else { return }
+                self.rightImageView.image = image.withRenderingMode(.alwaysOriginal)
             }
         } else {
             // Set a default image if no URL provided
@@ -231,11 +232,13 @@ final class CustomButton: UIButton {
         }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            guard let self = self, let data = data, error == nil,
+            guard let self = self else { return }
+            
+            guard let data = data, error == nil,
                   let image = UIImage(data: data) else {
                 // If there's an error loading the image, load placeholder image
                 DispatchQueue.main.async {
-                    self?.loadPlaceholderImage(completion: completion)
+                    self.loadPlaceholderImage(completion: completion)
                 }
                 return
             }
@@ -254,7 +257,9 @@ final class CustomButton: UIButton {
         }
         
         URLSession.shared.dataTask(with: placeholderURL) { [weak self] data, response, error in
-            guard let self = self, let data = data, error == nil,
+            guard let self = self else { return }
+            
+            guard let data = data, error == nil,
                   let placeholderImage = UIImage(data: data) else {
                 // If placeholder fails to load, use system image
                 DispatchQueue.main.async {
