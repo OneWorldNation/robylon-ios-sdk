@@ -192,8 +192,9 @@ final class ChatbotNetworkService {
             urlRequest.httpBody = jsonData
             ChatbotUtils.logInfo("Making API request to initialise chatbot")
             let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
+                guard let self = self else { return }
                 DispatchQueue.main.async {
-                    self?.handleAPIResponse(data: data, response: response, error: error, completion: completion)
+                    self.handleAPIResponse(data: data, response: response, error: error, completion: completion)
                 }
             }
             task.resume()
@@ -359,8 +360,9 @@ final class ChatbotAnalyticsService {
             ChatbotUtils.logInfo("Recording analytics event: \(eventType.rawValue)")
             
             let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
+                guard let self = self else { return }
                 DispatchQueue.main.async {
-                    self?.handleAnalyticsResponse(data: data, response: response, error: error, eventType: eventType)
+                    self.handleAnalyticsResponse(data: data, response: response, error: error, eventType: eventType)
                 }
             }
             task.resume()
