@@ -398,7 +398,7 @@ final class ChatbotAnalyticsService {
             platform: "ios",
             os: getOSInfo(),
             browser: "WebView",
-            sdk_version: "1.0.0",
+            sdk_version: "1.0.1",
             device: getDeviceType(),
             screen_size: AnalyticsAPIRequest.ScreenSize(
                 width: screenSize.width,
