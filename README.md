@@ -23,7 +23,7 @@ Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OneWorldNation/robylon-ios-sdk", from: "1.0.2")
+    .package(url: "https://github.com/OneWorldNation/robylon-ios-sdk", from: "1.0.3")
 ]
 ```
 
@@ -65,7 +65,6 @@ let config = ChatbotConfiguration(
     presentationStyle: .default // or .fullscreen. This denotes how the chatbot will open.
 )
 
-
 // Initialize chatbot
 RobylonSDK.initializeChatbot(config: config)
 ```
@@ -77,6 +76,22 @@ The SDK automatically creates and adds a custom button to the specified parent v
 - **Text Only**: Button with custom text and styling
 - **Image Only**: Circular button with custom image
 - **Text + Image**: Button with text and circular image
+
+### 3. Opening Chatbot Directly (Without automatic Button)
+
+If you already have a custom button and want to open the chatbot directly without the automatic button creation, you can use the direct opening method:
+
+```swift
+// Open chatbot directly with configuration
+// This will automatically initialize if needed and open the chatbot
+RobylonSDK.openChatbot(config: config)
+```
+
+**Key Benefits:**
+- **Automatic Initialization**: If the chatbot isn't initialized, it will initialize automatically
+- **No Button Required**: Perfect for apps with custom UI or existing buttons
+- **Seamless Experience**: Handles initialization and opening in one call
+- **KVO-Based**: Uses Key-Value Observing for real-time initialization status updates
 
 ## Configuration Parameters
 
@@ -242,6 +257,8 @@ class ViewController: UIViewController {
 
 ## SwiftUI Integration
 
+### Basic Integration with Automatic Button
+
 For SwiftUI apps, you can use the `ParentViewProvider` to get a UIView reference:
 
 ```swift
@@ -270,6 +287,7 @@ struct ContentView: View {
         )
     }
 }
+
 // MARK: - Parent View Provider
 struct ParentViewProvider: UIViewRepresentable {
     let onViewReady: (UIView) -> Void
@@ -289,7 +307,175 @@ struct ParentViewProvider: UIViewRepresentable {
 }
 ```
 
+### SwiftUI with Custom Button and Direct Opening
+
+If you want to use your own custom button in SwiftUI and open the chatbot directly:
+
+```swift
+import SwiftUI
+import RobylonSDK
+
+struct ContentView: View {
+    @State private var chatbotConfig: ChatbotConfiguration?
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Welcome to the App")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            // Custom chatbot button
+            Button(action: {
+                openChatbot()
+            }) {
+                HStack {
+                    Image(systemName: "message.circle.fill")
+                        .foregroundColor(.white)
+                    Text("Chat with Support")
+                        .foregroundColor(.white)
+                        .fontWeight(.medium)
+                }
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(25)
+            }
+            
+            // Other SwiftUI content
+            Text("Your app content goes here...")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .onAppear {
+            setupChatbot()
+        }
+    }
+    
+    private func setupChatbot() {
+        // Create configuration without parentView (no automatic button)
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            userId: "swiftui-user-123",
+            userProfile: UserProfile(
+                name: "SwiftUI User",
+                email: "user@example.com"
+            ),
+            debugMode: true,
+            eventHandler: { event in
+                print("📱 SwiftUI Event: \(event.type.rawValue)")
+                
+                switch event.type {
+                case .chatbotOpened:
+                    print("🚀 Chatbot opened from SwiftUI")
+                case .chatbotClosed:
+                    print("🔒 Chatbot closed from SwiftUI")
+                case .chatInitializationFailed:
+                    if let error = event.data?["error"] as? String {
+                        print("❌ Error: \(error)")
+                    }
+                default:
+                    break
+                }
+            },
+            parentView: nil, // No automatic button
+            presentationStyle: .default
+        )
+        
+        self.chatbotConfig = config
+    }
+    
+    private func openChatbot() {
+        guard let config = chatbotConfig else {
+            print("Chatbot not configured")
+            return
+        }
+        
+        // Open chatbot directly - will initialize if needed
+        RobylonSDK.openChatbot(config: config)
+    }
+}
+```
+
+### SwiftUI with Multiple Chatbot Triggers
+
+For apps that need to open the chatbot from different places:
+
+```swift
+import SwiftUI
+import RobylonSDK
+
+struct ChatbotManager: ObservableObject {
+    private var config: ChatbotConfiguration?
+    
+    init() {
+        setupChatbot()
+    }
+    
+    private func setupChatbot() {
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            debugMode: true,
+            eventHandler: { event in
+                print("Event: \(event.type.rawValue)")
+            },
+            parentView: nil
+        )
+        self.config = config
+    }
+    
+    func openChatbot() {
+        guard let config = config else { return }
+        RobylonSDK.openChatbot(config: config)
+    }
+}
+
+struct ContentView: View {
+    @StateObject private var chatbotManager = ChatbotManager()
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Main Content")
+                    .font(.title)
+                
+                // Chat button in main content
+                Button("Open Chat") {
+                    chatbotManager.openChatbot()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                NavigationLink("Settings") {
+                    SettingsView(chatbotManager: chatbotManager)
+                }
+            }
+            .padding()
+            .navigationTitle("App")
+        }
+    }
+}
+
+struct SettingsView: View {
+    let chatbotManager: ChatbotManager
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Settings")
+                .font(.title)
+            
+            // Chat button in settings
+            Button("Get Help") {
+                chatbotManager.openChatbot()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .navigationTitle("Settings")
+    }
+}
+```
+
 ## UIKit Integration
+
+### Basic Integration with Automatic Button
 
 For UIKit apps, you can integrate the chatbot directly in your view controller:
 
@@ -404,6 +590,199 @@ class ViewController: UIViewController {
 }
 ```
 
+### UIKit with Custom Button and Direct Opening
+
+If you want to use your own custom button in UIKit and open the chatbot directly:
+
+```swift
+import UIKit
+import RobylonSDK
+
+class ViewController: UIViewController {
+    
+    private var chatbotConfig: ChatbotConfiguration?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupChatbot()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        // Custom chatbot button
+        let chatButton = UIButton(type: .system)
+        chatButton.setTitle("💬 Chat with Support", for: .normal)
+        chatButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        chatButton.backgroundColor = .systemBlue
+        chatButton.setTitleColor(.white, for: .normal)
+        chatButton.layer.cornerRadius = 25
+        chatButton.addTarget(self, action: #selector(chatButtonTapped), for: .touchUpInside)
+        
+        // Add button to view
+        view.addSubview(chatButton)
+        chatButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            chatButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            chatButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            chatButton.widthAnchor.constraint(equalToConstant: 200),
+            chatButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+    
+    private func setupChatbot() {
+        let userProfile = UserProfile(
+            name: "Custom Button User",
+            email: "user@example.com"
+        )
+        
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            userId: "custom-button-user-123",
+            userToken: "auth-token-123",
+            userProfile: userProfile,
+            debugMode: true,
+            eventHandler: { [weak self] event in
+                print("📱 Custom Button Event: \(event.type.rawValue)")
+                
+                switch event.type {
+                case .chatbotOpened:
+                    print("🚀 Chatbot opened from custom button")
+                case .chatbotClosed:
+                    print("🔒 Chatbot closed from custom button")
+                case .chatInitializationFailed:
+                    if let error = event.data?["error"] as? String {
+                        print("❌ Error: \(error)")
+                        DispatchQueue.main.async {
+                            self?.showErrorAlert(message: error)
+                        }
+                    }
+                default:
+                    break
+                }
+            },
+            parentView: nil, // No automatic button
+            presentationStyle: .default
+        )
+        
+        self.chatbotConfig = config
+    }
+    
+    @objc private func chatButtonTapped() {
+        guard let config = chatbotConfig else {
+            print("Chatbot not configured")
+            return
+        }
+        
+        // Open chatbot directly - will initialize if needed
+        RobylonSDK.openChatbot(config: config)
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(
+            title: "Chatbot Error",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+```
+
+### UIKit with Multiple Chatbot Triggers
+
+For apps that need to open the chatbot from different places:
+
+```swift
+import UIKit
+import RobylonSDK
+
+class ChatbotManager {
+    static let shared = ChatbotManager()
+    private var config: ChatbotConfiguration?
+    
+    private init() {
+        setupChatbot()
+    }
+    
+    private func setupChatbot() {
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            debugMode: true,
+            eventHandler: { event in
+                print("Event: \(event.type.rawValue)")
+            },
+            parentView: nil
+        )
+        self.config = config
+    }
+    
+    func openChatbot() {
+        guard let config = config else { return }
+        RobylonSDK.openChatbot(config: config)
+    }
+}
+
+class MainViewController: UIViewController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        let chatButton = UIButton(type: .system)
+        chatButton.setTitle("Open Chat", for: .normal)
+        chatButton.addTarget(self, action: #selector(openChat), for: .touchUpInside)
+        
+        view.addSubview(chatButton)
+        chatButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            chatButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            chatButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
+    @objc private func openChat() {
+        ChatbotManager.shared.openChatbot()
+    }
+}
+
+class SettingsViewController: UIViewController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        let helpButton = UIButton(type: .system)
+        helpButton.setTitle("Get Help", for: .normal)
+        helpButton.addTarget(self, action: #selector(getHelp), for: .touchUpInside)
+        
+        view.addSubview(helpButton)
+        helpButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            helpButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            helpButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
+    @objc private func getHelp() {
+        ChatbotManager.shared.openChatbot()
+    }
+}
+```
+
 ### UIKit Integration with Tab Bar Controller
 
 For apps with tab bar controllers, you can add the chatbot to a specific tab:
@@ -448,6 +827,37 @@ class TabBarController: UITabBarController {
 }
 ```
 
+## Installation Approaches
+
+The SDK provides two main approaches for integrating the chatbot into your app:
+
+### 1. **Automatic Button Integration** (`RobylonSDK.initializeChatbot`)
+- **Use when**: You want the SDK to automatically create and manage the chatbot button
+- **Benefits**: 
+  - Zero UI code required
+  - Button automatically positioned and styled based on API response
+  - Handles all button lifecycle events
+- **Configuration**: Set `parentView` to specify where the button should be added
+
+### 2. **Direct Opening** (`RobylonSDK.openChatbot`)
+- **Use when**: You have your own custom UI or want to trigger the chatbot programmatically
+- **Benefits**:
+  - Full control over button appearance and placement
+  - Can trigger chatbot from anywhere in your app
+  - No automatic button creation
+  - Automatic initialization if needed
+- **Configuration**: Set `parentView: nil` to disable automatic button creation
+
+### When to Use Each Approach
+
+| Use Case | Recommended Approach | Example |
+|----------|---------------------|---------|
+| **Simple integration** | `initializeChatbot` | Basic apps needing a chatbot button |
+| **Custom UI design** | `openChatbot` | Apps with specific design requirements |
+| **Multiple triggers** | `openChatbot` | Apps that open chatbot from different places |
+| **Programmatic control** | `openChatbot` | Apps that need to control when chatbot opens |
+| **Existing buttons** | `openChatbot` | Apps that already have chat/support buttons |
+
 ## Architecture
 
 The SDK is built using a singleton pattern with the following components:
@@ -474,6 +884,41 @@ The SDK implements proper memory management:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Troubleshooting
+
+### Common Issues with Direct Opening
+
+#### 1. **Chatbot Not Opening**
+- **Cause**: Configuration not properly set up
+- **Solution**: Ensure `ChatbotConfiguration` is created with valid `apiKey`
+- **Check**: Verify `parentView: nil` is set to disable automatic button
+
+#### 2. **Initialization Takes Too Long**
+- **Cause**: Network issues or API delays
+- **Solution**: The SDK automatically handles timeouts and shows user-friendly messages
+- **Check**: Verify your API key and network connectivity
+
+#### 3. **Multiple Chatbot Instances**
+- **Cause**: Calling `openChatbot` multiple times
+- **Solution**: The SDK uses singleton pattern - only one instance will be created
+- **Best Practice**: Store configuration once and reuse it
+
+#### 4. **Event Handler Not Called**
+- **Cause**: Event handler not properly configured
+- **Solution**: Ensure `eventHandler` closure is properly set in configuration
+- **Check**: Verify closure syntax and memory management (use `[weak self]` if needed)
+
+### Debug Tips
+
+```swift
+// Enable debug mode for staging environment
+let config = ChatbotConfiguration(
+    apiKey: "your-api-key",
+    debugMode: true, // This enables detailed logging
+    // ... other parameters
+)
+```
 
 ## Support
 
