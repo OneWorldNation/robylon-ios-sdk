@@ -12,19 +12,19 @@ final class WebViewController: UIViewController {
     
     // MARK: - Properties
     private let configuration: ChatbotConfiguration?
-    private let url: String
+    private var url: String
     
     private var webView: WKWebView!
     private var isInitialized = false
     private var chatbotObserver: NSObjectProtocol?
     
     // MARK: - Initializer
-    init(configuration: ChatbotConfiguration, url: String? = nil) {
+    init(configuration: ChatbotConfiguration?, url: String) {
         self.configuration = configuration
-        self.url = url ?? (configuration.debugMode ? ChatbotConstants.URLs.debugBaseURL : ChatbotConstants.URLs.productionBaseURL)
+        self.url = url
         super.init(nibName: nil, bundle: nil)
         
-        self.modalPresentationStyle = configuration.presentationStyle.modalPresentationStyle
+        self.modalPresentationStyle = configuration?.presentationStyle.modalPresentationStyle ?? UIModalPresentationStyle.automatic
     }
     
     required init?(coder: NSCoder) {
@@ -288,11 +288,14 @@ final class WebViewController: UIViewController {
         ) { [weak self] notification in
             guard let self = self,
                   let userInfo = notification.userInfo,
-                  let isInitialized = userInfo["isInitialized"] as? Bool else {
+                  let isInitialized = userInfo[ChatbotConstants.NotificationUserInfoKeys.isInitialized] as? Bool,
+                  let url = userInfo[ChatbotConstants.NotificationUserInfoKeys.chatBotUrl] as? String else {
+                self?.dismiss(animated: true)
                 return
             }
             
             if isInitialized {
+                self.url = url
                 // Chatbot is now initialized, proceed with loading
                 self.removeChatbotObserver()
                 self.loadChatbotURL()

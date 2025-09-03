@@ -19,7 +19,7 @@ class Chatbot {
             NotificationCenter.default.post(
                 name: .chatbotInitializationStatusChanged,
                 object: self,
-                userInfo: ["isInitialized": isInitialized]
+                userInfo: [ChatbotConstants.NotificationUserInfoKeys.isInitialized: isInitialized, ChatbotConstants.NotificationUserInfoKeys.chatBotUrl: customBottomConfig?.chatBotUrl ?? ""]
             )
         }
     }
@@ -31,6 +31,7 @@ class Chatbot {
     
     // MARK: -  Methods
     func initialize(config: ChatbotConfiguration) {
+        self.configuration = config
         guard !isInitialized else {
             print("Chatbot is already initialized")
             return
@@ -61,11 +62,10 @@ class Chatbot {
     }
     
     private func completeInitialization(with config: ChatbotConfiguration, apiResponse: ChatbotAPIResponse) {
-        self.configuration = config
-        self.isInitialized = true
-        
         // Create CustomBottomConfig from API response
         self.customBottomConfig = CustomButtonConfig.from(apiResponse: apiResponse)
+        
+        self.isInitialized = true
         
         // Extract brand config data
         let brandConfig = apiResponse.user?.org_info?.brand_config
@@ -230,8 +230,8 @@ class Chatbot {
     }
     
     private func openChatbot() {
-        guard isInitialized, let config = configuration else {
-            print("Chatbot must be initialized before opening")
+        guard let config = configuration else {
+            print("Chatbot must be have configuration before opening")
             return
         }
         

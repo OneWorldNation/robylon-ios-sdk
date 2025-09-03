@@ -175,4 +175,9 @@ struct ChatbotConstants {
         public static let semibold = UIFont.systemFont(ofSize: 18, weight: .semibold)
         public static let bold = UIFont.systemFont(ofSize: 18, weight: .bold)
     }
-} 
+    
+    struct NotificationUserInfoKeys {
+        public static let chatBotUrl = "chatBotUrl"
+        public static let isInitialized = "isInitialized"
+    }
+}
