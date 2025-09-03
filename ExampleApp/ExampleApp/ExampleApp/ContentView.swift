@@ -10,34 +10,15 @@ import RobylonSDK
 
 struct ContentView: View {
     @State private var customButton: UIButton?
+    // Store parentView for use in button action
+    @State private var parentView: UIView?
     
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("🤖 Chatbot SDK Demo to integrate with Swiftui")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding()
-                
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding()
-            .navigationTitle("Chatbot SDK")
-            .background(
-                ParentViewProvider { parentView in
-                    // This closure will be called with the actual UIView
-                    initializeChatbot(with: parentView)
-                }
-            )
-        }
-    }
-    
-    private func initializeChatbot(with parentView: UIView) {
-        let config = ChatbotConfiguration(
-            apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac", // "82d83024-c677-4e93-bb95-997b38bc4209",
+    // Reusable config generator
+    private func makeConfig(parentView: UIView) -> ChatbotConfiguration {
+        ChatbotConfiguration(
+            apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
             orgId: nil,
-            userId: UUID().uuidString, // Generate a proper userId
+            userId: UUID().uuidString,
             userToken: "asdsadassa",
             userProfile: UserProfile(
                 name: "Test User",
@@ -50,8 +31,40 @@ struct ContentView: View {
             debugMode: true,
             presentationStyle: .fullscreen
         )
-        
-        RobylonSDK.initializeChatbot(config: config)
+    }
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("🤖 Chatbot SDK Demo to integrate with Swiftui")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding()
+                
+                Button("Open Chatbot") {
+                    if let parentView = parentView {
+                        let config = makeConfig(parentView: parentView)
+                        RobylonSDK.openChatbot(config: config)
+                    }
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding()
+            .navigationTitle("Chatbot SDK")
+            .background(
+                ParentViewProvider { view in
+                    parentView = view
+                    let config = makeConfig(parentView: view)
+//                    RobylonSDK.initializeChatbot(config: config)
+                }
+            )
+        }
     }
 }
 

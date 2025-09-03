@@ -21,6 +21,7 @@ final class WebViewController: UIViewController {
     
     private var webView: WKWebView!
     private var isInitialized = false
+    private var chatbotObserver: NSObjectProtocol?
 
     init(
         apiKey: String,
@@ -46,15 +47,21 @@ final class WebViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupWebView()
         
-        // Only load URL if not already loaded
-        if !isInitialized {
-            loadChatbotURL()
+        // Check if chatbot is initialized before loading URL
+        if Chatbot.shared.isInitialized {
+            // Only load URL if not already loaded
+            if !isInitialized {
+                loadChatbotURL()
+            }
+        } else {
+            // Chatbot not initialized, set up observer and show waiting message
+            setupChatbotObserver()
+            handleUninitializedChatbot()
         }
     }
     
@@ -72,6 +79,9 @@ final class WebViewController: UIViewController {
         
         // Remove listeners when view disappears
         removeMessageListeners()
+        
+        // Remove chatbot observer
+        removeChatbotObserver()
     }
     
     // MARK: - Setup
@@ -282,6 +292,56 @@ final class WebViewController: UIViewController {
         let screen_size = "\(Int(screen.width))x\(Int(screen.height))"
         
         return (platform, os, browser, sdk_version, device, screen_size)
+    }
+    
+    // MARK: - Chatbot Observer Management
+    private func setupChatbotObserver() {
+        // Remove any existing observer first
+        removeChatbotObserver()
+        
+        // Set up notification observer for chatbot initialization status changes
+        chatbotObserver = NotificationCenter.default.addObserver(
+            forName: .chatbotInitializationStatusChanged,
+            object: Chatbot.shared,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let userInfo = notification.userInfo,
+                  let isInitialized = userInfo["isInitialized"] as? Bool else {
+                return
+            }
+            
+            if isInitialized {
+                // Chatbot is now initialized, proceed with loading
+                self.removeChatbotObserver()
+                self.loadChatbotURL()
+            }
+        }
+    }
+    
+    private func removeChatbotObserver() {
+        if let observer = chatbotObserver {
+            NotificationCenter.default.removeObserver(observer)
+            chatbotObserver = nil
+        }
+    }
+    
+    // MARK: - Initialization Handling
+    private func handleUninitializedChatbot() {
+        // Show simple waiting message since KVO will handle the rest
+        let alert = UIAlertController(
+            title: "Chatbot Initializing",
+            message: "The chatbot is being set up. It will automatically open when ready.",
+            preferredStyle: .alert
+        )
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.dismiss(animated: true)
+        }
+        
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
     }
 }
 

@@ -74,4 +74,31 @@ public struct RobylonSDK {
     public static func initializeChatbot(config: ChatbotConfiguration) {
         Chatbot.shared.initialize(config: config)
     }
+    
+    /// Opens the chatbot directly with the provided configuration.
+    /// If the chatbot is not initialized, this method will automatically initialize it first.
+    /// 
+    /// ## Parameters:
+    /// - `config`: A `ChatbotConfiguration` object containing all necessary parameters
+    /// 
+    /// ## Important Notes:
+    /// - This method will automatically initialize the chatbot if it hasn't been initialized yet
+    /// - The chatbot will wait for initialization to complete before opening
+    /// - If initialization fails, an error event will be emitted through the eventHandler
+    /// 
+    /// ## Example:
+    /// ```swift
+    /// let config = ChatbotConfiguration(
+    ///     apiKey: "your-api-key",
+    ///     eventHandler: { event in
+    ///         print("Chatbot event: \(event.type.rawValue)")
+    ///     },
+    ///     parentView: self.view
+    /// )
+    /// 
+    /// RobylonSDK.openChatbot(config: config)
+    /// ```
+    public static func openChatbot(config: ChatbotConfiguration) {
+        Chatbot.shared.openChatbotWithConfig(config)
+    }
 }

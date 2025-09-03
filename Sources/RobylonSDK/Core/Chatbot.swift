@@ -1,6 +1,11 @@
 import UIKit
 import Foundation
 
+// MARK: - Notification Names
+extension Notification.Name {
+    static let chatbotInitializationStatusChanged = Notification.Name("chatbotInitializationStatusChanged")
+}
+
 // MARK: - Chatbot Singleton
 @MainActor
 class Chatbot {
@@ -8,7 +13,16 @@ class Chatbot {
     
     // MARK: - Properties
     private var configuration: ChatbotConfiguration?
-    private var isInitialized = false
+    var isInitialized = false {
+        didSet {
+            // Notify observers when initialization status changes
+            NotificationCenter.default.post(
+                name: .chatbotInitializationStatusChanged,
+                object: self,
+                userInfo: ["isInitialized": isInitialized]
+            )
+        }
+    }
     private var webViewController: WebViewController?
     private var customBottomConfig: CustomButtonConfig?
     
@@ -277,5 +291,19 @@ class Chatbot {
     
     func getConfiguration() -> ChatbotConfiguration? {
         return configuration
+    }
+    /// Opens the chatbot with the provided configuration.
+    /// If not initialized, automatically initializes first and waits for completion.
+    func openChatbotWithConfig(_ config: ChatbotConfiguration) {
+        if isInitialized {
+            // Already initialized, open directly
+            openChatbot()
+        } else {
+            // Not initialized, initialize first then open
+            initialize(config: config)
+            
+            // The WebViewController will observe the isInitialized property
+            // and automatically reload when initialization is complete
+        }
     }
 }
