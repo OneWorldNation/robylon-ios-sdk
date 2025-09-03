@@ -17,6 +17,7 @@ final class WebViewController: UIViewController {
     private var webView: WKWebView!
     private var isInitialized = false
     private var chatbotObserver: NSObjectProtocol?
+    private var initializationAlert: UIAlertController?
     
     // MARK: - Initializer
     init(configuration: ChatbotConfiguration?, url: String) {
@@ -74,6 +75,12 @@ final class WebViewController: UIViewController {
         
         // Remove chatbot observer
         removeChatbotObserver()
+        
+        // Dismiss any showing alert
+        if let alert = initializationAlert {
+            alert.dismiss(animated: false)
+            initializationAlert = nil
+        }
     }
     
     // MARK: - Setup
@@ -298,7 +305,8 @@ final class WebViewController: UIViewController {
                   let userInfo = notification.userInfo,
                   let isInitialized = userInfo[ChatbotConstants.NotificationUserInfoKeys.isInitialized] as? Bool,
                   let url = userInfo[ChatbotConstants.NotificationUserInfoKeys.chatBotUrl] as? String else {
-                self?.dismiss(animated: true)
+                // Invalid notification data, dismiss the alert and show error
+                self?.handleInitializationError("Invalid initialization data received")
                 return
             }
             
@@ -306,7 +314,16 @@ final class WebViewController: UIViewController {
                 self.url = url
                 // Chatbot is now initialized, proceed with loading
                 self.removeChatbotObserver()
+                
+                // Dismiss the initialization alert if it's still showing
+                if let alert = self.initializationAlert {
+                    alert.dismiss(animated: true) {
+                        self.initializationAlert = nil
+                    }
+                } 
+                // No alert to dismiss, load directly
                 self.loadChatbotURL()
+                
             }
         }
     }
@@ -337,12 +354,61 @@ final class WebViewController: UIViewController {
         )
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-            self?.dismiss(animated: true)
+            // Only dismiss the alert, not the WebViewController
+            self?.initializationAlert?.dismiss(animated: true) {
+                self?.initializationAlert = nil
+            }
         }
         
         alert.addAction(cancelAction)
         
+        // Store reference to the alert
+        self.initializationAlert = alert
+        
         present(alert, animated: true)
+        
+        // Set a timeout to automatically dismiss the alert if initialization takes too long
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) { [weak self] in
+            if let self = self, self.initializationAlert != nil {
+                self.handleInitializationError("Initialization timeout. Please try again.")
+            }
+        }
+    }
+    
+    private func handleInitializationError(_ message: String) {
+        // Dismiss the initialization alert if it's showing
+        if let alert = initializationAlert {
+            alert.dismiss(animated: true) {
+                self.initializationAlert = nil
+                // Show error alert
+                self.showErrorAlert(message: message)
+            }
+        } else {
+            // No initialization alert, show error directly
+            showErrorAlert(message: message)
+        }
+    }
+    
+    private func showErrorAlert(message: String) {
+        let errorAlert = UIAlertController(
+            title: "Initialization Error",
+            message: message,
+            preferredStyle: .alert
+        )
+        
+        let retryAction = UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+            // Try to set up the observer again
+            self?.setupChatbotObserver()
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.dismiss(animated: true)
+        }
+        
+        errorAlert.addAction(retryAction)
+        errorAlert.addAction(cancelAction)
+        
+        present(errorAlert, animated: true)
     }
 }
 
