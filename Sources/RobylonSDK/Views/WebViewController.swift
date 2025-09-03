@@ -43,8 +43,16 @@ final class WebViewController: UIViewController {
                 loadChatbotURL()
             }
         } else {
-            // Chatbot not initialized, set up observer and show waiting message
+            // Chatbot not initialized, set up observer
             setupChatbotObserver()
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Check initialization status and show alert if needed
+        if !Chatbot.shared.isInitialized {
             handleUninitializedChatbot()
         }
     }
@@ -312,6 +320,15 @@ final class WebViewController: UIViewController {
     
     // MARK: - Initialization Handling
     private func handleUninitializedChatbot() {
+        // Ensure the view controller is fully visible before presenting alert
+        guard isViewLoaded && view.window != nil else {
+            // View not ready yet, try again after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.handleUninitializedChatbot()
+            }
+            return
+        }
+        
         // Show simple waiting message since KVO will handle the rest
         let alert = UIAlertController(
             title: "Chatbot Initializing",

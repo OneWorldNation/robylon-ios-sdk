@@ -242,9 +242,10 @@ class Chatbot {
         }
         
         // Present the WebViewController
-        if let topVC = UIApplication.shared.windows.first?.rootViewController,
-           let webVC = webViewController {
-            topVC.present(webVC, animated: true) {
+        if let webVC = webViewController {
+            // Get the top view controller using modern iOS approach
+            let topVC = getTopViewController()
+            topVC?.present(webVC, animated: true) {
                 // Emit chatbot opened event
                 let openedEvent = ChatbotEvent(type: .chatbotOpened)
                 // Record analytics event
@@ -279,6 +280,22 @@ class Chatbot {
     
     func getConfiguration() -> ChatbotConfiguration? {
         return configuration
+    }
+    
+    func clearWebViewController() {
+        webViewController = nil
+    }
+    
+    // MARK: - Helper Methods
+    private func getTopViewController() -> UIViewController? {
+        if #available(iOS 13.0, *) {
+            let scenes = UIApplication.shared.connectedScenes
+            let windowScene = scenes.first as? UIWindowScene
+            let window = windowScene?.windows.first
+            return window?.rootViewController?.topMostViewController()
+        } else {
+            return UIApplication.shared.keyWindow?.rootViewController?.topMostViewController()
+        }
     }
     /// Opens the chatbot with the provided configuration.
     /// If not initialized, automatically initializes first and waits for completion.
