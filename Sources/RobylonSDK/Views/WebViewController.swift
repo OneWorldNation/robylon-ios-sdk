@@ -11,36 +11,20 @@ import WebKit
 final class WebViewController: UIViewController {
     
     // MARK: - Properties
-    private let apiKey: String
+    private let configuration: ChatbotConfiguration?
     private let url: String
-    private let userId: String
-    private let userToken: String?
-    var userProfile: UserProfile?
-    var eventHandler: ChatbotEventHandler?
-    var dismissCompletion: (() -> Void)?
     
     private var webView: WKWebView!
     private var isInitialized = false
     private var chatbotObserver: NSObjectProtocol?
-
-    init(
-        apiKey: String,
-        url: String,
-        userId: String = UUID().uuidString,
-        userToken: String? = nil,
-        userProfile: UserProfile? = nil,
-        eventHandler: ChatbotEventHandler? = nil,
-        dismissCompletion: (() -> Void)? = nil
-    ) {
-        self.apiKey = apiKey
-        self.url = url
-        self.userId = userId
-        self.userToken = userToken
-        self.userProfile = userProfile
-        self.eventHandler = eventHandler
-        self.dismissCompletion = dismissCompletion
-        
+    
+    // MARK: - Initializer
+    init(configuration: ChatbotConfiguration, url: String? = nil) {
+        self.configuration = configuration
+        self.url = url ?? (configuration.debugMode ? ChatbotConstants.URLs.debugBaseURL : ChatbotConstants.URLs.productionBaseURL)
         super.init(nibName: nil, bundle: nil)
+        
+        self.modalPresentationStyle = configuration.presentationStyle.modalPresentationStyle
     }
     
     required init?(coder: NSCoder) {
@@ -151,9 +135,9 @@ final class WebViewController: UIViewController {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Add user data if available
-        request.setValue(userId, forHTTPHeaderField: "X-User-ID")
+        request.setValue(configuration?.userId, forHTTPHeaderField: "X-User-ID")
         
-        if let userToken = userToken, !userToken.isEmpty {
+        if let userToken = configuration?.userToken, !userToken.isEmpty {
             request.setValue(userToken, forHTTPHeaderField: "X-User-Token")
         }
         
@@ -164,9 +148,6 @@ final class WebViewController: UIViewController {
     private func closeButtonTapped() {
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
-            
-            // Call dismiss completion and clear it
-            self.dismissCompletion?()
         }
     }
     
@@ -175,7 +156,7 @@ final class WebViewController: UIViewController {
         guard !isInitialized else { return }
         let systemInfo = getSystemInfo()
         let userId = UUID().uuidString
-        let userToken = self.userToken?.isEmpty == false ? self.userToken! : nil
+        let userToken = self.configuration?.userToken?.isEmpty == false ? self.configuration?.userToken! : nil
         
         let script = """
         // Add window.postMessage listener to capture responses
@@ -203,8 +184,8 @@ final class WebViewController: UIViewController {
                     userId: "\(userId)",
                     token: undefined,
                     userProfile: {
-                        name: "\(userProfile?.name ?? "")",
-                        email: "\(userProfile?.email ?? "")",
+                        name: "\(configuration?.userProfile?.name ?? "")",
+                        email: "\(configuration?.userProfile?.email ?? "")",
                         platform: "\(systemInfo.platform)",
                         os: "\(systemInfo.os)",
                         browser: "\(systemInfo.browser)",
@@ -361,7 +342,7 @@ extension WebViewController: WKNavigationDelegate {
         
         // Emit error event
         let event = ChatbotEvent(type: .chatInitializationFailed, data: ["error": error.localizedDescription])
-        eventHandler?(event)
+        configuration?.eventHandler?(event)
     }
 }
 
@@ -423,7 +404,7 @@ extension WebViewController: WKScriptMessageHandler {
                 
                 // Emit chatbot closed event
                 let event = ChatbotEvent(type: .chatbotClosed, data: data)
-                self.eventHandler?(event)
+                self.configuration?.eventHandler?(event)
                 closeButtonTapped()
                 
             case "CHAT_INITIALIZED":
@@ -437,7 +418,7 @@ extension WebViewController: WKScriptMessageHandler {
                 }
                 
                 let event = ChatbotEvent(type: .chatInitialized, data: data)
-                eventHandler?(event)
+                configuration?.eventHandler?(event)
                 
             case "CHATBOT_LOADED":
                 // Record analytics event
@@ -450,7 +431,7 @@ extension WebViewController: WKScriptMessageHandler {
                 }
                 
                 let event = ChatbotEvent(type: .chatbotLoaded, data: data)
-                eventHandler?(event)
+                configuration?.eventHandler?(event)
                 
             case "CHAT_INITIALIZATION_FAILED":
                 // Record analytics event
@@ -463,7 +444,7 @@ extension WebViewController: WKScriptMessageHandler {
                 }
                 
                 let event = ChatbotEvent(type: .chatInitializationFailed, data: data)
-                eventHandler?(event)
+                configuration?.eventHandler?(event)
                 
             case "SESSION_REFRESHED":
                 // Record analytics event
@@ -476,7 +457,7 @@ extension WebViewController: WKScriptMessageHandler {
                 }
                 
                 let event = ChatbotEvent(type: .sessionRefreshed, data: data)
-                eventHandler?(event)
+                configuration?.eventHandler?(event)
                 
             default:
                 ChatbotUtils.logWarning("📨 Unknown structured message type: \(type)")

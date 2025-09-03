@@ -56,7 +56,7 @@ struct ContentView: View {
             .background(
                 ParentViewProvider { view in
                     let config = makeConfig(parentView: view)
-//                    RobylonSDK.initializeChatbot(config: config)
+                    RobylonSDK.initializeChatbot(config: config)
                 }
             )
         }

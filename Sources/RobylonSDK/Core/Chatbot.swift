@@ -237,21 +237,8 @@ class Chatbot {
         
         // Use existing WebViewController if available, otherwise create new one
         if webViewController == nil {
-            let webVC = WebViewController(
-                apiKey: config.apiKey, 
-                url: customBottomConfig?.chatBotUrl ?? "", 
-                userId: config.userId, 
-                userToken: config.userToken, 
-                userProfile: config.userProfile, 
-                eventHandler: config.eventHandler
-            )
-            webVC.modalPresentationStyle = config.presentationStyle.modalPresentationStyle
+            let webVC = WebViewController(configuration: config, url: customBottomConfig?.chatBotUrl ?? "")
             self.webViewController = webVC
-            
-            // Set dismiss completion to clear reference
-            webVC.dismissCompletion = { [weak self] in
-                ChatbotUtils.logInfo("WebViewController reference cleared from Chatbot")
-            }
         }
         
         // Present the WebViewController
@@ -296,15 +283,9 @@ class Chatbot {
     /// Opens the chatbot with the provided configuration.
     /// If not initialized, automatically initializes first and waits for completion.
     func openChatbotWithConfig(_ config: ChatbotConfiguration) {
-        if isInitialized {
-            // Already initialized, open directly
-            openChatbot()
-        } else {
-            // Not initialized, initialize first then open
+        if !isInitialized {
             initialize(config: config)
-            
-            // The WebViewController will observe the isInitialized property
-            // and automatically reload when initialization is complete
         }
+        openChatbot()
     }
 }
