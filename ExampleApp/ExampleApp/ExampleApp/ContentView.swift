@@ -10,11 +10,9 @@ import RobylonSDK
 
 struct ContentView: View {
     @State private var customButton: UIButton?
-    // Store parentView for use in button action
-    @State private var parentView: UIView?
     
     // Reusable config generator
-    private func makeConfig(parentView: UIView) -> ChatbotConfiguration {
+    private func makeConfig(parentView: UIView? = nil) -> ChatbotConfiguration {
         ChatbotConfiguration(
             apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
             orgId: nil,
@@ -42,10 +40,8 @@ struct ContentView: View {
                     .padding()
                 
                 Button("Open Chatbot") {
-                    if let parentView = parentView {
-                        let config = makeConfig(parentView: parentView)
-                        RobylonSDK.openChatbot(config: config)
-                    }
+                    let config = makeConfig(parentView: nil)
+                    RobylonSDK.openChatbot(config: config)
                 }
                 .padding()
                 .background(Color.blue)
@@ -59,7 +55,6 @@ struct ContentView: View {
             .navigationTitle("Chatbot SDK")
             .background(
                 ParentViewProvider { view in
-                    parentView = view
                     let config = makeConfig(parentView: view)
 //                    RobylonSDK.initializeChatbot(config: config)
                 }

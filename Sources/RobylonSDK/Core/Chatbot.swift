@@ -140,10 +140,11 @@ class Chatbot {
         
         eventData["brandConfig"] = brandConfigData
         
-        // Create and add custom button to parent view
-        createAndAddCustomButton(to: config.parentView)
-        
-        ChatbotUtils.logSuccess("Chatbot button added successfully with API key: \(config.apiKey)")
+        if let parentView = config.parentView {
+            // Create and add custom button to parent view
+            createAndAddCustomButton(to: parentView)
+            ChatbotUtils.logSuccess("Chatbot button added successfully with API key: \(config.apiKey)")
+        }
     }
     
     private func createAndAddCustomButton(to parentView: UIView?) {
