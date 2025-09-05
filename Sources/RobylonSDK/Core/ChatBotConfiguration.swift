@@ -20,7 +20,7 @@ public struct ChatbotConfiguration {
     let orgId: String?
     let userId: String
     let userToken: String?
-    let userProfile: UserProfile?
+    let userProfile: ChatbotUserProfile?
     let debugMode: Bool // Default to false, can be set to true for debugging
     let eventHandler: ChatbotEventHandler?
     let parentView: UIView?
@@ -31,7 +31,7 @@ public struct ChatbotConfiguration {
         orgId: String? = nil,
         userId: String? = nil,
         userToken: String? = nil,
-        userProfile: UserProfile? = nil,
+        userProfile: ChatbotUserProfile? = nil,
         eventHandler: ChatbotEventHandler? = nil,
         parentView: UIView? = nil,
         debugMode: Bool = false, // Default value for debug mode

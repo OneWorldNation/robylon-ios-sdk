@@ -18,7 +18,7 @@ struct ContentView: View {
             orgId: nil,
             userId: UUID().uuidString,
             userToken: "asdsadassa",
-            userProfile: UserProfile(
+            userProfile: ChatbotUserProfile(
                 name: "Test User",
                 email: "test@example.com"
             ),

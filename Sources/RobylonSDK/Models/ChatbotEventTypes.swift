@@ -33,7 +33,7 @@ public struct ChatbotEvent {
 }
 
 // MARK: - User Profile
-public struct UserProfile: Codable {
+public struct ChatbotUserProfile: Codable {
     let name: String?
     let email: String?
     let is_Test_User: Bool

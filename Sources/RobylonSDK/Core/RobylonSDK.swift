@@ -13,7 +13,7 @@ import Foundation
 ///     apiKey: "your-api-key",
 ///     userId: "user123",
 ///     userToken: "auth-token",
-///     userProfile: UserProfile(name: "John", email: "john@example.com"),
+///     userProfile: ChatbotUserProfile(name: "John", email: "john@example.com"),
 ///     debugMode: false,
 ///     eventHandler: { event in
 ///         print("Chatbot event: \(event.type.rawValue)")

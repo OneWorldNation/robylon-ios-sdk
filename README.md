@@ -23,7 +23,7 @@ Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OneWorldNation/robylon-ios-sdk", from: "1.0.3")
+    .package(url: "https://github.com/OneWorldNation/robylon-ios-sdk", from: "1.0.4")
 ]
 ```
 
@@ -40,7 +40,7 @@ Or add it directly in Xcode:
 import RobylonSDK
 
 // Create user profile
-let userProfile = UserProfile(
+let userProfile = ChatbotUserProfile(
     name: "John Doe",
     email: "john.doe@example.com"
 )
@@ -104,16 +104,16 @@ RobylonSDK.openChatbot(config: config)
 - **`orgId`** (String?): Optional organization ID for multi-tenancy
 - **`userId`** (String?): Optional user identifier (auto-generated UUID if not provided)
 - **`userToken`** (String?): Optional authentication token
-- **`userProfile`** (UserProfile?): Optional user profile information
+- **`userProfile`** (ChatbotUserProfile?): Optional user profile information
 - **`debugMode`** (Bool): Set to `true` for staging environment, `false` for production (default: `false`)
 - **`eventHandler`** (ChatbotEventHandler?): Optional event callback handler
 - **`parentView`** (UIView?): UIView where the chatbot button will be added
 - **`presentationStyle`** (ChatBotPresentationStyle): How the chatbot interface should be presented (default: `.default`)
 
-### UserProfile Structure
+### ChatbotUserProfile Structure
 
 ```swift
-let userProfile = UserProfile(
+let userProfile = ChatbotUserProfile(
     name: "Optional User Name",
     email: "optional.email@example.com"
 )
@@ -216,7 +216,7 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = UserProfile(
+        let userProfile = ChatbotUserProfile(
             name: "Example User",
             email: "user@example.com"
         )
@@ -355,7 +355,7 @@ struct ContentView: View {
         let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",
             userId: "swiftui-user-123",
-            userProfile: UserProfile(
+            userProfile: ChatbotUserProfile(
                 name: "SwiftUI User",
                 email: "user@example.com"
             ),
@@ -511,7 +511,7 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = UserProfile(
+        let userProfile = ChatbotUserProfile(
             name: "UIKit User",
             email: "user@example.com"
         )
@@ -633,7 +633,7 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = UserProfile(
+        let userProfile = ChatbotUserProfile(
             name: "Custom Button User",
             email: "user@example.com"
         )
