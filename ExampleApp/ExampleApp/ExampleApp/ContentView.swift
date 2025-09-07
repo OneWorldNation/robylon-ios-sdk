@@ -18,10 +18,10 @@ struct ContentView: View {
             orgId: nil,
             userId: UUID().uuidString,
             userToken: "asdsadassa",
-            userProfile: ChatbotUserProfile(
-                name: "Test User",
-                email: "test@example.com"
-            ),
+            userProfile: [
+                "name": "Test User",
+                "email": "test@example.com"
+            ],
             eventHandler: { event in
                 print("📲 [SDK Event] Type: \(event.type.rawValue), Timestamp: \(event.timestamp), Data: \(String(describing: event.data))")
             },

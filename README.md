@@ -40,10 +40,10 @@ Or add it directly in Xcode:
 import RobylonSDK
 
 // Create user profile
-let userProfile = ChatbotUserProfile(
-    name: "John Doe",
-    email: "john.doe@example.com"
-)
+let userProfile = [
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+]
 
 // Define event handler
 let eventHandler: ChatbotEventHandler = { event in
@@ -104,19 +104,58 @@ RobylonSDK.openChatbot(config: config)
 - **`orgId`** (String?): Optional organization ID for multi-tenancy
 - **`userId`** (String?): Optional user identifier (auto-generated UUID if not provided)
 - **`userToken`** (String?): Optional authentication token
-- **`userProfile`** (ChatbotUserProfile?): Optional user profile information
+- **`userProfile`** ([String: Any]?): Optional user profile dictionary containing additional user information
 - **`debugMode`** (Bool): Set to `true` for staging environment, `false` for production (default: `false`)
 - **`eventHandler`** (ChatbotEventHandler?): Optional event callback handler
 - **`parentView`** (UIView?): UIView where the chatbot button will be added
 - **`presentationStyle`** (ChatBotPresentationStyle): How the chatbot interface should be presented (default: `.default`)
 
-### ChatbotUserProfile Structure
+### User Profile Dictionary Structure
 
 ```swift
-let userProfile = ChatbotUserProfile(
-    name: "Optional User Name",
-    email: "optional.email@example.com"
-)
+let userProfile = [
+    "name": "Optional User Name",
+    "email": "optional.email@example.com",
+    "phone": "+1234567890",
+    "company": "Example Corp",
+    "department": "Engineering"
+]
+```
+
+**Note**: All key-value pairs from the `userProfile` dictionary will be automatically included in the chatbot's user profile data, along with system information (platform, OS, browser, SDK version, device, screen size). You can include any custom fields that your chatbot needs.
+
+### Example: Complete User Profile Data
+
+When you provide a user profile like this:
+```swift
+let userProfile = [
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "company": "Tech Corp",
+    "department": "Engineering",
+    "user_id": "12345",
+    "subscription": "premium"
+]
+```
+
+The chatbot will receive all this data plus system information:
+```javascript
+{
+    "name": "John Doe",
+    "email": "john@example.com", 
+    "phone": "+1234567890",
+    "company": "Tech Corp",
+    "department": "Engineering",
+    "user_id": "12345",
+    "subscription": "premium",
+    "platform": "iOS",
+    "os": "iOS 17.0",
+    "browser": "WKWebView",
+    "sdk_version": "1.0.4",
+    "device": "iPhone",
+    "screen_size": "393x852"
+}
 ```
 
 ### Presentation Styles
@@ -216,10 +255,10 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = ChatbotUserProfile(
-            name: "Example User",
-            email: "user@example.com"
-        )
+        let userProfile = [
+            "name": "Example User",
+            "email": "user@example.com"
+        ]
         
         let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",
@@ -355,10 +394,10 @@ struct ContentView: View {
         let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",
             userId: "swiftui-user-123",
-            userProfile: ChatbotUserProfile(
-                name: "SwiftUI User",
-                email: "user@example.com"
-            ),
+            userProfile: [
+                "name": "SwiftUI User",
+                "email": "user@example.com"
+            ],
             debugMode: true,
             eventHandler: { event in
                 print("📱 SwiftUI Event: \(event.type.rawValue)")
@@ -511,10 +550,10 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = ChatbotUserProfile(
-            name: "UIKit User",
-            email: "user@example.com"
-        )
+        let userProfile = [
+            "name": "UIKit User",
+            "email": "user@example.com"
+        ]
         
         let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",
@@ -633,10 +672,10 @@ class ViewController: UIViewController {
     }
     
     private func setupChatbot() {
-        let userProfile = ChatbotUserProfile(
-            name: "Custom Button User",
-            email: "user@example.com"
-        )
+        let userProfile = [
+            "name": "Custom Button User",
+            "email": "user@example.com"
+        ]
         
         let config = ChatbotConfiguration(
             apiKey: "YOUR_API_KEY",

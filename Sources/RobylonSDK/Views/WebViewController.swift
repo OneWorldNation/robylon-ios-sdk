@@ -167,11 +167,35 @@ final class WebViewController: UIViewController {
     }
     
      // MARK: - Message Listeners Management
+    private func createUserProfileJavaScript(from userProfile: [String: Any]?, systemInfo: (platform: String, os: String, browser: String, sdk_version: String, device: String, screen_size: String)) -> String {
+        var profileItems: [String] = []
+        
+        // Add system info first
+        profileItems.append("\"platform\": \"\(systemInfo.platform)\"")
+        profileItems.append("\"os\": \"\(systemInfo.os)\"")
+        profileItems.append("\"browser\": \"\(systemInfo.browser)\"")
+        profileItems.append("\"sdk_version\": \"\(systemInfo.sdk_version)\"")
+        profileItems.append("\"device\": \"\(systemInfo.device)\"")
+        profileItems.append("\"screen_size\": \"\(systemInfo.screen_size)\"")
+        
+        // Add all user profile key-value pairs
+        if let userProfile = userProfile {
+            for (key, value) in userProfile {
+                let escapedKey = key.replacingOccurrences(of: "\"", with: "\\\"")
+                let escapedValue = "\(value)".replacingOccurrences(of: "\"", with: "\\\"")
+                profileItems.append("\"\(escapedKey)\": \"\(escapedValue)\"")
+            }
+        }
+        
+        return "{ " + profileItems.joined(separator: ", ") + " }"
+    }
+    
     private func addMessageListeners() {
         guard !isInitialized else { return }
         let systemInfo = getSystemInfo()
         let userId = self.configuration?.userId ?? UUID().uuidString
         let userToken = self.configuration?.userToken ?? "undefined"
+        let userProfileJS = createUserProfileJavaScript(from: configuration?.userProfile, systemInfo: systemInfo)
         
         let script = """
         // Add window.postMessage listener to capture responses
@@ -198,16 +222,7 @@ final class WebViewController: UIViewController {
                 data: {
                     userId: "\(userId)",
                     token: "\(userToken)",
-                    userProfile: {
-                        name: "\(configuration?.userProfile?.name ?? "")",
-                        email: "\(configuration?.userProfile?.email ?? "")",
-                        platform: "\(systemInfo.platform)",
-                        os: "\(systemInfo.os)",
-                        browser: "\(systemInfo.browser)",
-                        sdk_version: "\(systemInfo.sdk_version)",
-                        device: "\(systemInfo.device)",
-                        screen_size: "\(systemInfo.screen_size)"
-                    }
+                    userProfile: \(userProfileJS)
                 }
             }
         }))

@@ -9,7 +9,7 @@ import UIKit
 ///   - orgId: Optional organization ID for multi-tenancy support.
 ///   - userId: Optional user ID, defaults to a UUID if not provided.
 ///   - userToken: Optional user token for session management.
-///   - userProfile: Optional user profile containing additional user information.
+///   - userProfile: Optional user profile dictionary containing additional user information.
 ///   - debugMode: A boolean indicating whether to enable debug mode (default is false). This is done to test  chatbot SDK in debug mode. Connecting to the staging server for testing purposes. While releaseing your app please make sure debugMode is set to false.
 ///   - eventHandler: Optional event handler for handling chatbot events.
 ///   - parentView: Optional parent view for presenting the chatbot UI.
@@ -20,7 +20,7 @@ public struct ChatbotConfiguration {
     let orgId: String?
     let userId: String
     let userToken: String?
-    let userProfile: ChatbotUserProfile?
+    let userProfile: [String: Any]?
     let debugMode: Bool // Default to false, can be set to true for debugging
     let eventHandler: ChatbotEventHandler?
     let parentView: UIView?
@@ -31,7 +31,7 @@ public struct ChatbotConfiguration {
         orgId: String? = nil,
         userId: String? = nil,
         userToken: String? = nil,
-        userProfile: ChatbotUserProfile? = nil,
+        userProfile: [String: Any]? = nil,
         eventHandler: ChatbotEventHandler? = nil,
         parentView: UIView? = nil,
         debugMode: Bool = false, // Default value for debug mode

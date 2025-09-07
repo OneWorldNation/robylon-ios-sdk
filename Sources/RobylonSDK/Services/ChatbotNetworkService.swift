@@ -295,12 +295,7 @@ struct AnalyticsAPIRequest: Codable {
         let org_id: String
         let client_user_id: String
         let event_type: String
-        let user_profile: UserProfileData
-    }
-    
-    struct UserProfileData: Codable {
-        let email: String?
-        let name: String?
+        let user_profile: [String: String]?
     }
     
     struct Metadata: Codable {
@@ -387,10 +382,7 @@ final class ChatbotAnalyticsService {
             org_id: config.apiKey,
             client_user_id: config.userId ?? "",
             event_type: eventType.rawValue,
-            user_profile: AnalyticsAPIRequest.UserProfileData(
-                email: config.userProfile?.email,
-                name: config.userProfile?.name
-            )
+            user_profile: convertUserProfileToStringDictionary(config.userProfile)
         )
         
         let metadata = AnalyticsAPIRequest.Metadata(
@@ -462,5 +454,15 @@ final class ChatbotAnalyticsService {
         } else {
             return "desktop"
         }
+    }
+    
+    private func convertUserProfileToStringDictionary(_ userProfile: [String: Any]?) -> [String: String]? {
+        guard let userProfile = userProfile else { return nil }
+        
+        var stringDictionary: [String: String] = [:]
+        for (key, value) in userProfile {
+            stringDictionary[key] = "\(value)"
+        }
+        return stringDictionary
     }
 }
