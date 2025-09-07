@@ -170,7 +170,7 @@ final class WebViewController: UIViewController {
     private func addMessageListeners() {
         guard !isInitialized else { return }
         let systemInfo = getSystemInfo()
-        let userId = UUID().uuidString
+        let userId = self.configuration?.userId ?? UUID().uuidString
         let userToken = self.configuration?.userToken?.isEmpty == false ? self.configuration?.userToken! : nil
         
         let script = """
