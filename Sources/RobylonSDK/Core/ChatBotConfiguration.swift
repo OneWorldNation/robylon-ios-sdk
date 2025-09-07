@@ -39,13 +39,34 @@ public struct ChatbotConfiguration {
     ) {
         self.apiKey = apiKey
         self.orgId = orgId
-        self.userId = userId ?? UUID().uuidString // Generate a UUID if userId is nil
+        self.userId = userId ?? ChatbotConfiguration.getOrCreatePersistentUserId()
         self.userToken = userToken
         self.userProfile = userProfile
         self.eventHandler = eventHandler
         self.parentView = parentView
         self.debugMode = debugMode
         self.presentationStyle = presentationStyle
+    }
+    
+    // MARK: - Persistent User ID Management
+    private static let persistentUserIdKey = "RobylonSDK_PersistentUserId"
+    
+    /// Retrieves the stored user ID from persistent storage, or creates and stores a new one if none exists
+    /// - Returns: A persistent user ID string
+    private static func getOrCreatePersistentUserId() -> String {
+        let userDefaults = UserDefaults.standard
+        
+        // Try to retrieve existing user ID
+        if let existingUserId = userDefaults.string(forKey: persistentUserIdKey) {
+            return existingUserId
+        }
+        
+        // Generate new user ID and store it
+        let newUserId = UUID().uuidString
+        userDefaults.set(newUserId, forKey: persistentUserIdKey)
+        userDefaults.synchronize()
+        
+        return newUserId
     }
 }
 

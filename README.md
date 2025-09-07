@@ -102,7 +102,7 @@ RobylonSDK.openChatbot(config: config)
 ### Optional Parameters
 
 - **`orgId`** (String?): Optional organization ID for multi-tenancy
-- **`userId`** (String?): Optional user identifier (auto-generated UUID if not provided)
+- **`userId`** (String?): Optional user identifier (auto-generated persistent UUID if not provided)
 - **`userToken`** (String?): Optional authentication token
 - **`userProfile`** ([String: Any]?): Optional user profile dictionary containing additional user information
 - **`debugMode`** (Bool): Set to `true` for staging environment, `false` for production (default: `false`)

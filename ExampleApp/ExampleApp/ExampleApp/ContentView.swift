@@ -16,7 +16,6 @@ struct ContentView: View {
         ChatbotConfiguration(
             apiKey: "30e4fab6-cadb-4b99-b1e7-30fca6e147ac",
             orgId: nil,
-            userId: UUID().uuidString,
             userToken: "asdsadassa",
             userProfile: [
                 "name": "Test User",
