@@ -187,6 +187,11 @@ final class WebViewController: UIViewController {
             }
         }
         
+        // Add isTestUser if not present
+        if userProfile?[ChatbotConstants.isTestUser] == nil {
+            profileItems.append("\"\(ChatbotConstants.isTestUser)\": \"false\"")
+        }
+        
         return "{ " + profileItems.joined(separator: ", ") + " }"
     }
     

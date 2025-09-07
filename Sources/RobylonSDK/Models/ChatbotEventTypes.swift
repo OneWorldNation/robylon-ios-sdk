@@ -32,19 +32,6 @@ public struct ChatbotEvent {
     }
 }
 
-// MARK: - User Profile
-public struct ChatbotUserProfile: Codable {
-    let name: String?
-    let email: String?
-    let is_Test_User: Bool
-    
-    public init(name: String? = nil, email: String? = nil, isTestUser: Bool = true) {
-        self.name = name
-        self.email = email
-        self.is_Test_User = isTestUser
-    }
-}
-
 // MARK: - Event Handler Type
 public typealias ChatbotEventHandler = (ChatbotEvent) -> Void 
 

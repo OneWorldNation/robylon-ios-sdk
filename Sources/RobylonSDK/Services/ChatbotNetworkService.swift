@@ -463,6 +463,7 @@ final class ChatbotAnalyticsService {
         for (key, value) in userProfile {
             stringDictionary[key] = "\(value)"
         }
+        
         return stringDictionary
     }
 }
