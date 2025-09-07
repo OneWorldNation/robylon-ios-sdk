@@ -101,4 +101,33 @@ public struct RobylonSDK {
     public static func openChatbot(config: ChatbotConfiguration) {
         Chatbot.shared.openChatbotWithConfig(config)
     }
+    
+    /// Destroys the chatbot instance, clearing all resources and resetting state.
+    /// This method will completely reset the chatbot to its initial state.
+    /// 
+    /// ## What it does:
+    /// - Clears and destroys the WebView instance
+    /// - Resets the initialization state
+    /// - Clears the configuration
+    /// - Clears the custom button configuration
+    /// 
+    /// ## Important Notes:
+    /// - This will completely reset the chatbot to its initial state
+    /// - Any existing WebView will be dismissed and destroyed
+    /// - The chatbot will need to be re-initialized before use
+    /// - This is useful for memory management or when switching configurations
+    /// 
+    /// ## Example:
+    /// ```swift
+    /// // Destroy the chatbot instance
+    /// RobylonSDK.destroyChatbot()
+    /// 
+    /// // Later, re-initialize with new configuration
+    /// let newConfig = ChatbotConfiguration(apiKey: "new-key", ...)
+    /// RobylonSDK.initializeChatbot(config: newConfig)
+    /// ```
+    public static func destroyChatbot() {
+        Chatbot.shared.destroy()
+    }
+    
 }

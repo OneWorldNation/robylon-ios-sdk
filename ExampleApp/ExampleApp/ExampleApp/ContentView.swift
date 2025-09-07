@@ -48,6 +48,13 @@ struct ContentView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
                 
+                Button("destroy Chatbot") {
+                    RobylonSDK.destroyChatbot()
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

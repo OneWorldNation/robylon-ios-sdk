@@ -305,4 +305,45 @@ class Chatbot {
         }
         openChatbot()
     }
+    
+    /// Destroys the chatbot instance, clearing all resources and resetting state.
+    /// This method will:
+    /// - Clear and destroy the WebView instance
+    /// - Reset the initialization state
+    /// - Clear the configuration
+    /// - Clear the custom button configuration
+    /// 
+    /// ## Important Notes:
+    /// - This will completely reset the chatbot to its initial state
+    /// - Any existing WebView will be dismissed and destroyed
+    /// - The chatbot will need to be re-initialized before use
+    /// - This is useful for memory management or when switching configurations
+    /// 
+    /// ## Example:
+    /// ```swift
+    /// // Destroy the chatbot instance
+    /// Chatbot.shared.destroy()
+    /// 
+    /// // Later, re-initialize with new configuration
+    /// let newConfig = ChatbotConfiguration(apiKey: "new-key", ...)
+    /// RobylonSDK.initializeChatbot(config: newConfig)
+    /// ```
+    public func destroy() {
+        // Dismiss and clear WebView if it exists
+        if let webVC = webViewController {
+            webVC.cleanupWebView()
+        }
+        webViewController = nil
+        
+        // Reset initialization state
+        isInitialized = false
+        
+        // Clear configuration
+        configuration = nil
+        
+        // Clear custom button configuration
+        customBottomConfig = nil
+        
+        ChatbotUtils.logInfo("Chatbot instance destroyed and reset")
+    }
 }

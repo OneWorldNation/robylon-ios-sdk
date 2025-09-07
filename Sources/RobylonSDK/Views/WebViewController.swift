@@ -171,7 +171,7 @@ final class WebViewController: UIViewController {
         guard !isInitialized else { return }
         let systemInfo = getSystemInfo()
         let userId = self.configuration?.userId ?? UUID().uuidString
-        let userToken = self.configuration?.userToken?.isEmpty == false ? self.configuration?.userToken! : nil
+        let userToken = self.configuration?.userToken ?? "undefined"
         
         let script = """
         // Add window.postMessage listener to capture responses
@@ -197,7 +197,7 @@ final class WebViewController: UIViewController {
                 action: "registerUserId",
                 data: {
                     userId: "\(userId)",
-                    token: undefined,
+                    token: "\(userToken)",
                     userProfile: {
                         name: "\(configuration?.userProfile?.name ?? "")",
                         email: "\(configuration?.userProfile?.email ?? "")",
@@ -241,7 +241,7 @@ final class WebViewController: UIViewController {
     }
     
     // MARK: - Cleanup Methods
-    private func cleanupWebView() {
+    func cleanupWebView() {
         guard let webView = webView else { return }
         
         // Remove all message handlers

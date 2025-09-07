@@ -848,6 +848,15 @@ The SDK provides two main approaches for integrating the chatbot into your app:
   - Automatic initialization if needed
 - **Configuration**: Set `parentView: nil` to disable automatic button creation
 
+### 3. **Destroy and Reset** (`RobylonSDK.destroyChatbot`)
+- **Use when**: You need to completely reset the chatbot state or free memory
+- **Benefits**:
+  - Clears all chatbot resources and state
+  - Frees memory by destroying WebView instance
+  - Allows switching between different configurations
+  - Useful for memory management
+- **Configuration**: No parameters required - completely resets the chatbot
+
 ### When to Use Each Approach
 
 | Use Case | Recommended Approach | Example |
@@ -857,6 +866,216 @@ The SDK provides two main approaches for integrating the chatbot into your app:
 | **Multiple triggers** | `openChatbot` | Apps that open chatbot from different places |
 | **Programmatic control** | `openChatbot` | Apps that need to control when chatbot opens |
 | **Existing buttons** | `openChatbot` | Apps that already have chat/support buttons |
+| **Memory management** | `destroyChatbot` | Free resources during memory warnings |
+| **Environment switching** | `destroyChatbot` + `initializeChatbot` | Switch between staging/production |
+| **User logout** | `destroyChatbot` | Clear chatbot state on logout |
+
+## Destroy and Reset Functionality
+
+The SDK provides a destroy method to completely reset the chatbot state and free resources:
+
+### Basic Usage
+
+```swift
+// Destroy the chatbot instance
+RobylonSDK.destroyChatbot()
+
+// Later, re-initialize with new configuration
+let newConfig = ChatbotConfiguration(
+    apiKey: "new-api-key",
+    debugMode: false,
+    eventHandler: { event in
+        print("Event: \(event.type.rawValue)")
+    },
+    parentView: self.view
+)
+RobylonSDK.initializeChatbot(config: newConfig)
+```
+
+### Memory Management Example
+
+```swift
+import UIKit
+import RobylonSDK
+
+class ViewController: UIViewController {
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        
+        // Destroy chatbot to free memory
+        RobylonSDK.destroyChatbot()
+        print("Chatbot destroyed due to memory warning")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Re-initialize if needed
+        if !isChatbotInitialized() {
+            setupChatbot()
+        }
+    }
+    
+    private func isChatbotInitialized() -> Bool {
+        // Check if chatbot is initialized (you can implement this based on your needs)
+        return false // Placeholder - implement your own logic
+    }
+    
+    private func setupChatbot() {
+        let config = ChatbotConfiguration(
+            apiKey: "YOUR_API_KEY",
+            debugMode: true,
+            eventHandler: { event in
+                print("Event: \(event.type.rawValue)")
+            },
+            parentView: self.view
+        )
+        RobylonSDK.initializeChatbot(config: config)
+    }
+}
+```
+
+### Configuration Switching Example
+
+```swift
+import UIKit
+import RobylonSDK
+
+class SettingsViewController: UIViewController {
+    
+    @IBAction func switchToProduction(_ sender: UIButton) {
+        // Destroy current chatbot
+        RobylonSDK.destroyChatbot()
+        
+        // Initialize with production configuration
+        let productionConfig = ChatbotConfiguration(
+            apiKey: "PRODUCTION_API_KEY",
+            debugMode: false, // Production mode
+            eventHandler: { event in
+                print("Production Event: \(event.type.rawValue)")
+            },
+            parentView: self.view
+        )
+        
+        RobylonSDK.initializeChatbot(config: productionConfig)
+        showAlert(message: "Switched to production environment")
+    }
+    
+    @IBAction func switchToStaging(_ sender: UIButton) {
+        // Destroy current chatbot
+        RobylonSDK.destroyChatbot()
+        
+        // Initialize with staging configuration
+        let stagingConfig = ChatbotConfiguration(
+            apiKey: "STAGING_API_KEY",
+            debugMode: true, // Staging mode
+            eventHandler: { event in
+                print("Staging Event: \(event.type.rawValue)")
+            },
+            parentView: self.view
+        )
+        
+        RobylonSDK.initializeChatbot(config: stagingConfig)
+        showAlert(message: "Switched to staging environment")
+    }
+    
+    private func showAlert(message: String) {
+        let alert = UIAlertController(
+            title: "Environment Changed",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+```
+
+### SwiftUI Destroy Example
+
+```swift
+import SwiftUI
+import RobylonSDK
+
+struct SettingsView: View {
+    @State private var isProductionMode = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Chatbot Settings")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Toggle("Production Mode", isOn: $isProductionMode)
+                .onChange(of: isProductionMode) { newValue in
+                    switchEnvironment(toProduction: newValue)
+                }
+            
+            Button("Reset Chatbot") {
+                resetChatbot()
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(.red)
+            
+            Spacer()
+        }
+        .padding()
+        .alert("Environment Changed", isPresented: $showingAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
+    }
+    
+    private func switchEnvironment(toProduction: Bool) {
+        // Destroy current chatbot
+        RobylonSDK.destroyChatbot()
+        
+        // Initialize with new configuration
+        let config = ChatbotConfiguration(
+            apiKey: toProduction ? "PRODUCTION_API_KEY" : "STAGING_API_KEY",
+            debugMode: !toProduction,
+            eventHandler: { event in
+                print("\(toProduction ? "Production" : "Staging") Event: \(event.type.rawValue)")
+            },
+            parentView: nil
+        )
+        
+        RobylonSDK.initializeChatbot(config: config)
+        alertMessage = "Switched to \(toProduction ? "production" : "staging") environment"
+        showingAlert = true
+    }
+    
+    private func resetChatbot() {
+        RobylonSDK.destroyChatbot()
+        alertMessage = "Chatbot has been reset"
+        showingAlert = true
+    }
+}
+```
+
+### What the Destroy Method Does
+
+The `destroyChatbot()` method performs the following actions:
+
+1. **Clears WebView Instance**: Dismisses and destroys any active WebView
+2. **Resets Initialization State**: Sets `isInitialized` to `false`
+3. **Clears Configuration**: Removes stored configuration data
+4. **Clears Custom Button Config**: Removes button configuration
+5. **Frees Memory**: Releases all chatbot-related resources
+
+### When to Use Destroy
+
+| Scenario | Use Case | Example |
+|----------|----------|---------|
+| **Memory Management** | Free up memory during low memory warnings | `didReceiveMemoryWarning()` |
+| **Environment Switching** | Switch between staging and production | Settings screen toggle |
+| **User Logout** | Clear chatbot state when user logs out | Logout button action |
+| **Configuration Changes** | Apply new API keys or settings | Settings update |
+| **App Backgrounding** | Free resources when app goes to background | `applicationDidEnterBackground` |
 
 ## Architecture
 
@@ -908,6 +1127,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Cause**: Event handler not properly configured
 - **Solution**: Ensure `eventHandler` closure is properly set in configuration
 - **Check**: Verify closure syntax and memory management (use `[weak self]` if needed)
+
+#### 5. **Chatbot Not Destroying Properly**
+- **Cause**: WebView not properly cleaned up
+- **Solution**: The destroy method automatically handles WebView cleanup
+- **Check**: Ensure you're calling `RobylonSDK.destroyChatbot()` on the main thread
+
+#### 6. **Memory Issues After Destroy**
+- **Cause**: Resources not fully released
+- **Solution**: The destroy method clears all references and calls `cleanupWebView()`
+- **Check**: Verify that you're not holding strong references to the chatbot instance
 
 ### Debug Tips
 
