@@ -79,6 +79,105 @@ struct ChatbotUtils {
         return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     }
     
+    // MARK: - System Info
+    static func getSystemInfo() -> (platform: String, os: String, browser: String, sdk_version: String, device: String, screen_size: String) {
+        let platform = "iOS"
+        let os = UIDevice.current.systemName + " " + UIDevice.current.systemVersion
+        let browser = "WebView"
+        let sdk_version = "1.0.0" // You can update this to your actual SDK version
+        
+        // Get device type
+        let device: String
+        switch UIDevice.current.userInterfaceIdiom {
+        case .phone:
+            device = "iPhone"
+        case .pad:
+            device = "iPad"
+        case .tv:
+            device = "Apple TV"
+        case .carPlay:
+            device = "CarPlay"
+        case .mac:
+            device = "Mac"
+        @unknown default:
+            device = "Unknown"
+        }
+        
+        // Get screen size
+        let screen = UIScreen.main.bounds
+        let screen_size = "\(Int(screen.width))x\(Int(screen.height))"
+        
+        return (platform, os, browser, sdk_version, device, screen_size)
+    }
+    
+    // MARK: - User Profile JSON Creation
+    static func createUserProfileJavaScript(from userProfile: [String: Any]?, systemInfo: (platform: String, os: String, browser: String, sdk_version: String, device: String, screen_size: String)) -> String {
+        var profileItems: [Any] = []
+        
+        // Add system info first
+        profileItems.append(("platform", systemInfo.platform))
+        profileItems.append(("os", systemInfo.os))
+        profileItems.append(("browser", systemInfo.browser))
+        profileItems.append(("sdk_version", systemInfo.sdk_version))
+        profileItems.append(("device", systemInfo.device))
+        profileItems.append(("screen_size", systemInfo.screen_size))
+        
+        // Add all user profile key-value pairs
+        if let userProfile = userProfile {
+            for (key, value) in userProfile {
+                profileItems.append((key, value))
+            }
+        }
+        
+        // Add isTestUser if not present
+        if userProfile?[ChatbotConstants.isTestUser] == nil {
+            profileItems.append((ChatbotConstants.isTestUser, false))
+        }
+        
+        return convertToJSONString(profileItems)
+    }
+    
+    private static func convertToJSONString(_ profileItems: [Any]) -> String {
+        var jsonParts: [String] = []
+        
+        for item in profileItems {
+            if let (key, value) = item as? (String, Any) {
+                let escapedKey = key.replacingOccurrences(of: "\"", with: "\\\"")
+                let jsonValue = formatValueForJSON(value)
+                jsonParts.append("\"\(escapedKey)\": \(jsonValue)")
+            }
+        }
+        
+        return "{ " + jsonParts.joined(separator: ", ") + " }"
+    }
+    
+    private static func formatValueForJSON(_ value: Any) -> String {
+        switch value {
+        case is String:
+            let escapedString = "\(value)".replacingOccurrences(of: "\"", with: "\\\"")
+            return "\"\(escapedString)\""
+        case is Bool:
+            return "\(value)"
+        case is Int, is Double, is Float:
+            return "\(value)"
+        case is NSNull:
+            return "null"
+        case let array as [Any]:
+            let formattedArray = array.map { formatValueForJSON($0) }.joined(separator: ", ")
+            return "[\(formattedArray)]"
+        case let dict as [String: Any]:
+            let formattedDict = dict.map { key, val in
+                let escapedKey = key.replacingOccurrences(of: "\"", with: "\\\"")
+                return "\"\(escapedKey)\": \(formatValueForJSON(val))"
+            }.joined(separator: ", ")
+            return "{\(formattedDict)}"
+        default:
+            // For any other type, convert to string and escape
+            let escapedString = "\(value)".replacingOccurrences(of: "\"", with: "\\\"")
+            return "\"\(escapedString)\""
+        }
+    }
+    
     static func getBestFontColor(for backgroundColor: UIColor, contrastThreshold: CGFloat = 0.5) -> UIColor {
         let whiteShade = UIColor.white
         let blackShade = UIColor(red: 14/255, green: 14/255, blue: 15/255, alpha: 1)
