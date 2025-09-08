@@ -155,7 +155,7 @@ struct ChatbotConstants {
     public static let defaultFontSize: CGFloat = 16
     public static let defaultButtonHeight: CGFloat = 50
     public static let defaultButtonWidth: CGFloat = 200
-    public static let isTestUser = "is_Test_User"
+    public static let isTestUser = "is_test_user"
     
     struct URLs {
         public static let debugBaseURL = "https://stage-api.robylon.ai"
