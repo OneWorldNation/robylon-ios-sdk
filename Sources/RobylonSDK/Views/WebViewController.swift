@@ -1,4 +1,4 @@
-//
+ //
 //  WebViewController.swift
 //  RobylonSDK
 //
@@ -18,6 +18,7 @@ final class WebViewController: UIViewController {
     private var isInitialized = false
     private var chatbotObserver: NSObjectProtocol?
     private var initializationAlert: UIAlertController?
+    private var isInitialLoadComplete = false
     
     // MARK: - Initializer
     init(configuration: ChatbotConfiguration?, url: String) {
@@ -430,12 +431,53 @@ final class WebViewController: UIViewController {
         
         present(errorAlert, animated: true)
     }
+    
+    // MARK: - External Link Handling
+    private func openInExternalBrowser(url: URL) {
+        ChatbotUtils.logInfo("Opening external URL in browser: \(url.absoluteString)")
+        
+        // Use UIApplication.shared.open to open the URL in Safari
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url, options: [:]) { success in
+                if success {
+                    ChatbotUtils.logSuccess("Successfully opened external URL in browser")
+                } else {
+                    ChatbotUtils.logError("Failed to open external URL in browser")
+                }
+            }
+        } else {
+            ChatbotUtils.logError("Cannot open URL: \(url.absoluteString)")
+        }
+    }
 }
 
 // MARK: - WKNavigationDelegate
 extension WebViewController: WKNavigationDelegate {
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        print("navigationAction: \(navigationAction)")
+        
+        // Only intercept link interactions after initial load is complete
+        if isInitialLoadComplete && (navigationAction.navigationType == .linkActivated || navigationAction.navigationType == .other) {
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.allow)
+                return
+            }
+            
+            // Open all links in external browser
+            openInExternalBrowser(url: url)
+            decisionHandler(.cancel)
+            return
+        }
+        
+        // Allow all navigation during initial load and other navigation types
+        decisionHandler(.allow)
+    }
+    
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         ChatbotUtils.logSuccess("Chatbot web page loaded successfully")
+        
+        // Mark initial load as complete
+        isInitialLoadComplete = true
         
         // Wait a bit for the page to fully load, then inject postMessage events
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
